@@ -115,11 +115,6 @@ Not just another playbook pack:
 - **Scanners drown you in noise.** Longinus follows a *prove-it-or-park-it* rule and reports only what
   it can actually demonstrate.
 
-## Who it's for
-
-- **Developers & founders** auditing their own (often AI-written) code before launch.
-- **Bug-bounty hunters & pentesters** who need a repeatable methodology against authorized scope.
-
 ## Dependency CVE checks
 
 Longinus does not have its own CVE database. It delegates to the ecosystem's SCA tools and applies
