@@ -8,6 +8,10 @@ References: OAuth 2.0 Security BCP (RFC 9700), JWT BCP (RFC 8725), OpenID Connec
 
 > ⛔ Gate first. Token theft demos must use your own test accounts; never capture real users' tokens.
 
+> 🛡️ **Enforce-forward.** Anchor to **NIST 800-63 / FAPI**. Class-killer: **library token-verify (pin
+> alg + audience + exp) + mandatory `state`/PKCE**. Gate it with a **JWT-verify config lint/test** →
+> [../enforce-forward.md](../enforce-forward.md) · [../templates/validation-layer.md](../templates/validation-layer.md).
+
 ## Mechanical scan
 
 > **Quick mode only.** Run these greps, apply skip conditions, report matches.

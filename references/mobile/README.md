@@ -13,6 +13,9 @@ trusts the client. Maps to **OWASP MASVS / MASTG** (the mobile equivalent of ASV
 > **[HackTricks Mobile](https://book.hacktricks.wiki/)**; the backend is usually the real prize — pivot
 > to [../api/README.md](../api/README.md).
 
+> 🛡️ **Enforce-forward.** Anchor to **MASVS**. Class-killer: **platform keystore + cert pinning + no
+> client-side trust**. Gate it with **MobSF/lint in CI** → [../enforce-forward.md](../enforce-forward.md).
+
 ## Mechanical scan — Mobile quick checks
 
 Run these before the deeper analysis below.

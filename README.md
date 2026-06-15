@@ -176,6 +176,19 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.2.1
+
+- **Enforce-forward** — findings now end in a *structural control + CI/lint gate*, not just a patch.
+  New `references/enforce-forward.md` with a per-category **standard → control → gate** matrix and
+  runnable `references/templates/` (validation-layer, ci-gates, policy-as-code, pre-commit-and-secrets);
+  the *Fix-forward* principle is upgraded to *Enforce-forward*. Each gate is framed by the attack it kills.
+- **Secure-coding standards for C/C++/embedded source** — new `references/secure-coding-standards.md`
+  (CERT-C/CWE for security · MISRA/ISO 26262 for safety), the source-compliance companion to the
+  binary-exploitation / reverse-engineering branches.
+- Per-category Enforce-forward pointers across domain READMEs; identity gains NIST 800-63 / FAPI.
+- SKILL.md slimmed to a lean dispatcher via an `audit-modes.md` split; quick-check sections unified
+  under `## Mechanical scan`; `severity-and-triage.md` set as the canonical false-positive source.
+
 ### v0.2.0
 
 - Three audit modes: quick (mechanical grep scans, small on-device models 11B+) / standard / deep

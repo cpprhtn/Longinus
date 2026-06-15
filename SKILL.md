@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill: it profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -85,6 +85,7 @@ Pick the row that matches the target and open that file. Don't open the others.
 | **Cloud account / Terraform / k8s** | [cloud-and-infra/README.md](references/cloud-and-infra/README.md) |
 | **A mobile app** | [mobile/README.md](references/mobile/README.md) |
 | **A native binary / firmware** | [reverse-engineering/](references/reverse-engineering/README.md) → [binary-exploitation/](references/binary-exploitation/README.md) |
+| **C/C++ / embedded / firmware *source*** (secure-coding, MISRA/CERT-C) | [secure-coding-standards.md](references/secure-coding-standards.md) |
 | **A CTF challenge** | the matching specialist branch (crypto / forensics / pwn / reverse / web) |
 | **A live target needing recon first** | [recon/README.md](references/recon/README.md) |
 
@@ -129,7 +130,9 @@ lookup is **[references/pattern-triggers.md](references/pattern-triggers.md)**.
 - **Think in principles, report in chains** — derive bugs from the six generative principles
   ([pattern-triggers.md](references/pattern-triggers.md)); rate them by *chained* impact
   ([chaining-and-impact.md](references/chaining-and-impact.md)), never in isolation.
-- **Fix-forward** — every finding ends in a remediation a dev can apply today.
+- **Fix-forward → enforce-forward** — every finding ends not just in a patch but in the *structural
+  control* that kills the class and the *CI/lint gate* that prevents regression
+  ([enforce-forward.md](references/enforce-forward.md)).
 - **Stay in scope, stay non-destructive** — when in doubt, narrow.
 - **Read minimally** — one leaf at a time; depth only on demand.
 - **Teach while you test** — briefly say *why* it's exploitable.

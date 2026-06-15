@@ -48,12 +48,14 @@ is the *only* file you need to open for that signal.)
 | An `.apk`/`.ipa`; hard-coded secrets, exported component, pinning | [mobile/README.md](mobile/README.md) |
 | A native binary: overflow / format string / ROP / heap (pwn) | [binary-exploitation/README.md](binary-exploitation/README.md) |
 | Need to understand an unknown binary (decompile, unpack, crackme) | [reverse-engineering/README.md](reverse-engineering/README.md) |
+| C/C++ / firmware / embedded **source** (secure-coding, MISRA/CERT-C, memory safety) | [secure-coding-standards.md](secure-coding-standards.md) |
 | RSA/AES-CBC/XOR/hash, padding oracle, weak RNG, reused nonce | [cryptography/README.md](cryptography/README.md) |
 | A PCAP / memory dump / disk image / stego / log to analyze | [forensics/README.md](forensics/README.md) |
 | Need to find the attack surface first (subdomains, endpoints, OSINT) | [recon/README.md](recon/README.md) |
 | Got a low/medium — *what does it unlock?* how do I escalate across a boundary? | [chaining-and-impact.md](chaining-and-impact.md) |
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
 | Picking audit depth (quick/standard/deep), first-contact profiling, dependency/SCA check | [audit-modes.md](audit-modes.md) |
+| Don't just fix it — *enforce* it (structural control + CI gate per category) | [enforce-forward.md](enforce-forward.md) |
 
 Don't see your exact signal? Three fallbacks: (1) the **principle-driven** entry —
 the six generative principles in [pattern-triggers.md](pattern-triggers.md) reason from *how the
@@ -73,6 +75,7 @@ Longinus
 │   ├── audit-modes.md ................... 🎚️ quick/standard/deep modes, first-contact profiling, SCA check
 │   ├── chaining-and-impact.md ........... 🔗 compose findings across trust boundaries → real impact
 │   ├── severity-and-triage.md ........... CVSS 4.0, de-dup, false-positive control, prioritization
+│   ├── enforce-forward.md ............... 🛡️ kill the bug class + gate the regression (per-category controls + templates/)
 │   └── reporting-and-disclosure.md ...... report + PoC templates, responsible disclosure
 │
 ├── 🔭 recon/ ............................ ATTACK-SURFACE DISCOVERY  (dynamic targets + code inventory)
@@ -126,6 +129,8 @@ Longinus
 │
 ├── 🔬 reverse-engineering/ .............. RE
 │   └── README.md ........................ static/dynamic RE, disassembly/decompilation, unpacking, anti-RE
+│
+├── 🧷 secure-coding-standards.md ........ C/C++/embedded SOURCE compliance — CERT-C/CWE (security) · MISRA/ISO26262 (safety)
 │
 ├── 🔐 cryptography/ ..................... CRYPTO ATTACKS  (CTF + real-world misuse)
 │   └── README.md ........................ padding-oracle, ECB/CBC, weak RNG, hash/length-ext, RSA, JWT-alg, TLS

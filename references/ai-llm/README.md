@@ -12,6 +12,11 @@ red-team an AI feature. References: OWASP GenAI/LLM Top 10:2025, MITRE ATLAS, NI
 > The classic web branch still applies: an LLM app is also a web app/API. Test
 > [../web/](../web/README.md) and [../secrets-and-supply-chain/](../secrets-and-supply-chain/README.md)
 > too. The model's output is just another untrusted input to the rest of your system.
+>
+> 🛡️ **Enforce-forward.** Anchor to **NIST AI RMF**. Class-killer: **output validation + tool-arg
+> allowlist + tenant isolation + human-in-the-loop**. Gate it with an **output-validation layer + a
+> `modelscan` gate** → [../enforce-forward.md](../enforce-forward.md) ·
+> [../templates/validation-layer.md](../templates/validation-layer.md) · [../templates/ci-gates.md](../templates/ci-gates.md).
 
 ## Mechanical scan — AI/LLM quick checks
 

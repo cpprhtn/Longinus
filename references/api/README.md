@@ -9,6 +9,10 @@ web sinks see [../web/README.md](../web/README.md).
 > ⛔ Gate first. APIs make bulk-extraction trivially easy — be extra careful to stay non-destructive
 > and not exfiltrate real data; a 2–3 record proof suffices.
 
+> 🛡️ **Enforce-forward.** Class-killer: **schema validation (OpenAPI) + per-object authz** (ASVS).
+> Gate it with **request-validation middleware + a contract test** → [../enforce-forward.md](../enforce-forward.md) ·
+> [../templates/validation-layer.md](../templates/validation-layer.md).
+
 ## Mechanical scan — API quick checks
 
 Run these before the deeper analysis below.

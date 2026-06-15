@@ -74,7 +74,9 @@ impact, merge same-root-cause instances, rank ruthlessly. Separate confirmed fro
 ## 8. Report
 Write it up per [reporting-and-disclosure.md](reporting-and-disclosure.md): executive summary,
 prioritized fix list, then per-finding detail with PoC and remediation. For code audits, propose the
-patch. For third-party targets, follow responsible disclosure.
+patch — and, beyond the per-instance patch, the **structural control + the CI/lint gate** that kills the
+class and prevents regression ([enforce-forward.md](enforce-forward.md)). For third-party targets,
+follow responsible disclosure.
 
 ## 9. Retest
 After fixes, re-run the specific PoCs to confirm closure and check for fix-bypasses (a blocklist that

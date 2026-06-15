@@ -4,8 +4,10 @@ Bibliography for the governance & lens **spine**:
 [`authorization-and-scope.md`](../references/authorization-and-scope.md) ·
 [`attacker-mindset.md`](../references/attacker-mindset.md) ·
 [`methodology.md`](../references/methodology.md) ·
+[`audit-modes.md`](../references/audit-modes.md) ·
 [`chaining-and-impact.md`](../references/chaining-and-impact.md) ·
 [`severity-and-triage.md`](../references/severity-and-triage.md) ·
+[`enforce-forward.md`](../references/enforce-forward.md) ·
 [`reporting-and-disclosure.md`](../references/reporting-and-disclosure.md).
 ↑ back to the [RESEARCH hub](../RESEARCH.md).
 
@@ -41,6 +43,26 @@ and [`chaining-and-impact.md`](../references/chaining-and-impact.md) (composing 
   [reddelexc/hackerone-reports](https://github.com/reddelexc/hackerone-reports); CTF multi-stage chains
   in [ctf.md](ctf.md). The *lethal trifecta* framing for LLM agents (Simon Willison) lives in
   [ai-llm.md](ai-llm.md).
+
+## Verification & enforcement standards
+
+Grounding for [`enforce-forward.md`](../references/enforce-forward.md) (kill the class + gate the
+regression) and the per-category enforcement templates:
+
+- **OWASP ASVS** — application security *verification* standard (web/API). →
+  https://owasp.org/www-project-application-security-verification-standard/
+- **CIS Benchmarks** — hardening baselines for cloud/OS/k8s (policy-as-code maps to these). →
+  https://www.cisecurity.org/cis-benchmarks
+- **SLSA** (supply-chain integrity) + **NIST SSDF** (SP 800-218, secure software dev). →
+  https://slsa.dev/ · https://csrc.nist.gov/Projects/ssdf
+- **NIST SP 800-63** (digital identity) + **FAPI** (financial-grade API hardening). →
+  https://pages.nist.gov/800-63-3/ · https://openid.net/wg/fapi/
+- **NIST AI RMF** (AI risk management). → https://www.nist.gov/itl/ai-risk-management-framework
+- **C/C++:** SEI CERT C/C++, MISRA, ISO 26262 — see
+  [`secure-coding-standards.md`](../references/secure-coding-standards.md).
+- **Enforcement tooling:** [Semgrep](https://semgrep.dev/) (SAST) ·
+  [OPA](https://www.openpolicyagent.org/) / [Conftest](https://www.conftest.dev/) (policy-as-code) ·
+  checkov/tfsec · gitleaks/detect-secrets · [pre-commit](https://pre-commit.com/) · modelscan.
 
 ## Severity & scoring
 

@@ -166,6 +166,18 @@ Longinus/
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.2.1
+
+- **Enforce-forward** — 발견이 단순 패치가 아니라 *구조적 통제 + CI/lint 게이트*로 끝나도록. 신규
+  `references/enforce-forward.md`에 카테고리별 **표준 → 통제 → 게이트** 매트릭스와 실행 가능한
+  `references/templates/`(validation-layer, ci-gates, policy-as-code, pre-commit-and-secrets) 추가;
+  *Fix-forward* 원리를 *Enforce-forward*로 격상. 각 게이트는 *그것이 막는 공격*으로 프레이밍.
+- **C/C++·임베디드 소스용 시큐어 코딩 표준** — 신규 `references/secure-coding-standards.md`
+  (보안=CERT-C/CWE · 안전=MISRA/ISO 26262), binary-exploitation/reverse-engineering의 소스 컴플라이언스 짝.
+- 도메인 README들에 카테고리별 Enforce-forward 포인터 추가; identity에 NIST 800-63/FAPI 보강.
+- SKILL.md를 `audit-modes.md` 분리로 lean dispatcher화; quick-check를 `## Mechanical scan`으로 통일;
+  `severity-and-triage.md`를 오탐 규율의 정전(canonical) 출처로 지정.
+
 ### v0.2.0
 
 - 세 가지 감사 모드: quick (grep 기반 기계적 스캔, 소형 온디바이스 모델 11B+) / standard / deep

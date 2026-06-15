@@ -76,7 +76,8 @@ services ([../web/](../web/README.md)). Pair with fuzzing (AFL++) to find new bu
 
 If you ship native/compiled code: don't rely on obfuscation for secrets (it *will* be reversed — see
 [../mobile/README.md](../mobile/README.md) and [../secrets-and-supply-chain/secret-detection.md](../secrets-and-supply-chain/secret-detection.md));
-keep secrets and trust on the server.
+keep secrets and trust on the server. Auditing the C/C++ **source** (not the compiled binary)? See
+[../secure-coding-standards.md](../secure-coding-standards.md) (CERT-C/CWE · MISRA).
 
 ## References
 

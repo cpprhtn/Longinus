@@ -10,6 +10,10 @@ Maps to **OWASP A02:2025 (Security Misconfiguration)**, **CIS Benchmarks**, and 
 > accounts/resources you own or are explicitly authorized for; default to **config review** (read-only)
 > over live exploitation.
 
+> 🛡️ **Enforce-forward.** Anchor to **CIS Benchmarks**. Class-killer: **least-privilege + IMDSv2 +
+> private-by-default**. Gate it with **checkov/tfsec + OPA/Conftest** policy-as-code →
+> [../enforce-forward.md](../enforce-forward.md) · [../templates/policy-as-code.md](../templates/policy-as-code.md).
+
 ## Mechanical scan — Cloud/IaC quick checks
 
 Run these before the deeper config review below.

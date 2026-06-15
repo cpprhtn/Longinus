@@ -15,6 +15,10 @@ Why AI code is especially exposed:
   re-introducing fixed vulnerabilities.
 - Generated `Dockerfile`/CI/IaC often run as root, pin nothing, and bake in secrets.
 
+> 🛡️ **Enforce-forward.** Anchor to **SLSA / NIST SSDF**. Class-killer: **no secrets in code + pinned
+> deps + build provenance**. Gate it with **gitleaks pre-commit + an SCA gate + lockfile pinning** →
+> [../enforce-forward.md](../enforce-forward.md) · [../templates/pre-commit-and-secrets.md](../templates/pre-commit-and-secrets.md) · [../templates/ci-gates.md](../templates/ci-gates.md).
+
 ## Branch map
 
 | Leaf | Covers |

@@ -7,6 +7,10 @@ that map to **OWASP A04:2025 (Cryptographic Failures)**.
 
 > ⛔ Apply to CTF challenges, your own systems, or authorized targets.
 
+> 🛡️ **Enforce-forward.** Class-killer: **a vetted library, no roll-your-own, strong primitives** (NIST
+> FIPS / SP 800-57). Gate it with a **Semgrep "ban weak crypto" rule** in CI →
+> [../enforce-forward.md](../enforce-forward.md) · [../templates/ci-gates.md](../templates/ci-gates.md).
+
 ## Real-world crypto failures (A04:2025) — audit checklist
 
 For a code/app audit, look for these first (they're common in vibe-coded apps):

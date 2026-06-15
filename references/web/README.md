@@ -7,6 +7,10 @@ the **OWASP Web Security Testing Guide (WSTG)**; defensive fixes reference the *
 > ⛔ Gate first ([../authorization-and-scope.md](../authorization-and-scope.md)). For your own code,
 > static-audit freely; for live targets, stay in scope and non-destructive.
 
+> 🛡️ **Enforce-forward.** Class-killer: a **central output-encoder + input-validation schema** (ASVS).
+> Gate it with **Semgrep + a validation layer** in CI → [../enforce-forward.md](../enforce-forward.md) ·
+> [../templates/validation-layer.md](../templates/validation-layer.md) · [../templates/ci-gates.md](../templates/ci-gates.md).
+
 ## Mechanical scan
 
 > **Quick-mode consolidated web scan** (web is multi-leaf — this is the single entry point). Run these

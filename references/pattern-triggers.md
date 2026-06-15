@@ -202,6 +202,16 @@ from [severity-and-triage.md](severity-and-triage.md).
 | No `package-lock.json` / `yarn.lock` / `poetry.lock` committed | **Unpinned dependencies** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | OK if an alternative lockfile mechanism exists |
 | Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package. **Unconfirmed reachability → Info / patch-anyway, not High/Critical** (see severity gates in [severity-and-triage.md](severity-and-triage.md)) |
 
+## C / C++ / native patterns (source audit)
+
+| Code pattern you see | Check for | Leaf | False-positive guard |
+|---|---|---|---|
+| `gets(` / `strcpy(` / `strcat(` / `sprintf(` / `scanf("%s"` | **Buffer overflow** (CWE-120/787) | [secure-coding-standards.md](secure-coding-standards.md) | OK if a bounded variant (`snprintf`/`strlcpy`/`_s`) or the size is a compile-time constant ≤ destination |
+| `memcpy(`/`memmove(` with a length from input or `a*b`/`a+b` arithmetic | **Buffer / integer overflow** (CWE-190) | [secure-coding-standards.md](secure-coding-standards.md) | OK if the length is bounds-checked (and overflow-checked) before the copy |
+| `printf(user)` / `fprintf(f, user)` / `syslog(pri, user)` — no format literal | **Format string** (CWE-134) | [secure-coding-standards.md](secure-coding-standards.md) | OK if the format argument is a string literal |
+| `malloc`/`realloc`/`fopen` result dereferenced without a NULL check | **Unchecked allocation → NULL deref** (CWE-252/690) | [secure-coding-standards.md](secure-coding-standards.md) | OK if the result is NULL-checked before use |
+| `free(p)` then `p` used again, or `p` freed twice | **Use-after-free / double-free** (CWE-416/415) | [secure-coding-standards.md](secure-coding-standards.md) | OK if `p` is set to NULL after free and never reused |
+
 ---
 
 When you encounter a pattern not in this table, reason from the six principles above —
