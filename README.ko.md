@@ -101,6 +101,21 @@ git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
 `SKILL.md`가 폴더 최상위에 있고 `references/`, `research/`가 그 옆에 있어야 하므로 **전체 트리를 그대로
 클론**하세요. 내부 링크가 상대경로라, 일부 파일만 복사하면 동작하지 않습니다.
 
+**옵션 — 멀티에이전트 레이어.** 스킬은 단독으로 동작합니다. 각 도메인을 **독립 컨텍스트**에서 병렬로 감사하고
+싶다면(도메인 간 편향 없음), 번들된 [서브에이전트](agents/README.md)를 Claude Code가 인식하는 위치로 복사한 뒤
+Claude Code를 재시작하세요:
+
+```bash
+# 개인 단위 — 모든 프로젝트에서 사용 (개인 스킬 설치 후)
+cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
+
+# 또는 프로젝트 단위 (스킬을 .claude/skills/longinus 로 클론한 경우)
+mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
+```
+
+그다음 *"Longinus 감사 돌려줘"* 라고 하면 **오케스트레이터**가 전문가들을 지휘합니다.
+→ [agents/README.md](agents/README.md).
+
 ## 사용
 
 설치 후에는 보안 관련 요청을 하거나 `/longinus`를 호출하면 됩니다.
@@ -136,6 +151,7 @@ Longinus/
 ├── README.ko.md                    ← 한국어 안내 (이 문서)
 ├── SKILL.md                        ← 오케스트레이션 브레인 (실제 진입점)
 ├── RESEARCH.md                     ← 참고문헌 허브 (research/ 트리 색인)
+├── agents/                         ← 옵션 멀티에이전트 레이어 (오케스트레이터 + 도메인 전문가 5)
 ├── docs/                           ← 개념 설명 (문서별로 분리)
 │   ├── why.md                      ← 왜 만들었나 (3가지 흐름)
 │   ├── who-its-for.md              ← 대상 + 결과물 (스캐너 덤프가 아닌 리포트)
@@ -165,6 +181,14 @@ Longinus/
 
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.3.0
+
+- **옵션 멀티에이전트 레이어** (`agents/`) — Longinus 감사를 협업 팀으로 실행. **longinus-orchestrator**가
+  프로파일 → 인가 게이트 → read-only 도메인 전문가 5명(`secrets`, `web`, `api-identity`, `cloud`, `ai`)을
+  각자 **독립 컨텍스트**로 위임 → de-dup → 체이닝 → 트리아지 → 단일 랭킹 리포트. 세션 오염을 *구조적으로*
+  해결(도메인 간 편향 없음)하고 전문가를 병렬 실행. `agents/*.md`를 `~/.claude/agents/`로 복사해 설치;
+  스킬은 여전히 **단독 동작**. → [agents/README.md](agents/README.md).
 
 ### v0.2.2
 

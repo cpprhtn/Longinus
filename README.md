@@ -109,6 +109,21 @@ git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
 Clone the **whole tree** so `SKILL.md` sits at the folder root with `references/` and `research/`
 beside it — the internal links are relative, so copying individual files breaks it.
 
+**Optional — multi-agent layer.** The skill works standalone. For a coordinated audit where each domain
+runs in its **own context** (no cross-domain bias, parallel specialists), copy the bundled
+[subagents](agents/README.md) where Claude Code discovers them, then restart Claude Code:
+
+```bash
+# Personal — available in every project (after a personal skill install)
+cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
+
+# Or per-project (when the skill is cloned to .claude/skills/longinus)
+mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
+```
+
+Then ask *"run a Longinus audit"* and the **orchestrator** dispatches the specialists. See
+[agents/README.md](agents/README.md).
+
 ## Usage
 
 After install, just ask a security question, or run `/longinus`:
@@ -146,6 +161,7 @@ Longinus/
 ├── README.ko.md                    ← Korean landing
 ├── SKILL.md                        ← the orchestration brain (the entry point)
 ├── RESEARCH.md                     ← bibliography hub (indexes the research/ tree)
+├── agents/                         ← OPTIONAL multi-agent layer (orchestrator + 5 domain specialists)
 ├── docs/                           ← the concept, split into linked docs
 │   ├── why.md                      ← why this exists (the 3 trends)
 │   ├── who-its-for.md              ← audiences + what you get (a report, not a scanner dump)
@@ -175,6 +191,15 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.3.0
+
+- **Optional multi-agent layer** (`agents/`) — run a Longinus audit as a coordinated team. A
+  **longinus-orchestrator** profiles → gates authorization → dispatches 5 read-only domain specialists
+  (`secrets`, `web`, `api-identity`, `cloud`, `ai`), each in its **own context window**, then de-dups →
+  chains → triages → one ranked report. This fixes session contamination *structurally* (no cross-domain
+  bias) and runs specialists in parallel. Install by copying `agents/*.md` into `~/.claude/agents/`; the
+  skill still works **standalone**. See [agents/README.md](agents/README.md).
 
 ### v0.2.2
 
