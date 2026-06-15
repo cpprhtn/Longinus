@@ -191,15 +191,15 @@ from [severity-and-triage.md](severity-and-triage.md).
 | `FROM image:latest` without digest pin | **Unpinned base image (supply chain)** | [cloud-and-infra/iac-and-containers.md](cloud-and-infra/iac-and-containers.md) | OK if pinned by `@sha256:...` digest elsewhere |
 | `privileged: true` / `hostPath` / `hostNetwork` in k8s manifest | **Container escape risk** | [cloud-and-infra/iac-and-containers.md](cloud-and-infra/iac-and-containers.md) | OK only with a documented justification and strong compensating controls |
 | `0.0.0.0/0` in security group / firewall ingress rule | **Unrestricted network exposure** | [cloud-and-infra/cloud-iam.md](cloud-and-infra/cloud-iam.md) | OK for load balancers / CDNs serving public traffic; not OK for SSH/DB/admin ports |
-| Secrets in `.tf` / `tfvars` / `docker-compose.yml` / hardcoded env | **Hardcoded infrastructure secret** | [secrets-and-supply-chain/secret-detection.md](../secrets-and-supply-chain/secret-detection.md) | Never OK — use a secret manager |
+| Secrets in `.tf` / `tfvars` / `docker-compose.yml` / hardcoded env | **Hardcoded infrastructure secret** | [secrets-and-supply-chain/secret-detection.md](secrets-and-supply-chain/secret-detection.md) | Never OK — use a secret manager |
 
 ## Secrets / Supply chain patterns
 
 | Code pattern you see | Check for | Leaf | False-positive guard |
 |---|---|---|---|
-| `api_key = "sk-..."` / `password = "..."` / `token = "ghp_..."` in source | **Hardcoded secret** | [secrets-and-supply-chain/secret-detection.md](../secrets-and-supply-chain/secret-detection.md) | OK if it's a placeholder/example (e.g., `"your-api-key-here"` or in docs/tests with fake values) |
-| No `package-lock.json` / `yarn.lock` / `poetry.lock` committed | **Unpinned dependencies** | [secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md) | OK if an alternative lockfile mechanism exists |
-| Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package. **Unconfirmed reachability → Info / patch-anyway, not High/Critical** (see severity gates in [severity-and-triage.md](severity-and-triage.md)) |
+| `api_key = "sk-..."` / `password = "..."` / `token = "ghp_..."` in source | **Hardcoded secret** | [secrets-and-supply-chain/secret-detection.md](secrets-and-supply-chain/secret-detection.md) | OK if it's a placeholder/example (e.g., `"your-api-key-here"` or in docs/tests with fake values) |
+| No `package-lock.json` / `yarn.lock` / `poetry.lock` committed | **Unpinned dependencies** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | OK if an alternative lockfile mechanism exists |
+| Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package. **Unconfirmed reachability → Info / patch-anyway, not High/Critical** (see severity gates in [severity-and-triage.md](severity-and-triage.md)) |
 
 ---
 
