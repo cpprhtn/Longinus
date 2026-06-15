@@ -6,6 +6,31 @@ processes — overrides the developer's intent. There is **no complete prompt-le
 testing is to (a) show what an attacker can make the model do/say, and (b) verify the *deterministic*
 controls around the model contain the blast radius.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Model output flowing to dangerous sinks**
+```bash
+rg -n "innerHTML.*model|innerHTML.*response|innerHTML.*completion|\.query\(.*completion|exec\(.*response|eval\(.*model|fetch\(.*output" .
+```
+- **SKIP if:** model output is escaped/parameterized/validated identically to raw user input before reaching the sink
+- **FINDING if not skipped:** Type: Improper Output Handling (LLM05) | Severity: High | Fix: Treat model output as untrusted; escape/parameterize before any sink
+
+**STEP 2 — Secrets in system prompt**
+```bash
+rg -n "system.*prompt|system_message|SystemMessage|role.*system" .
+```
+- **SKIP if:** the system prompt does not contain API keys, passwords, DB credentials, or secrets
+- **FINDING if not skipped:** Type: Secret in System Prompt (LLM07) | Severity: High | Fix: Move secrets to backend environment variables; never include in prompts
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Direct prompt injection (LLM01)
 
 The user is the attacker, talking straight to the model.

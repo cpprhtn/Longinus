@@ -13,6 +13,7 @@ reproduce, and how to fix it** — in that order.
 2. Scope & methodology      ── what was tested, how, when; what was NOT tested (stated honestly).
 3. Prioritized fix list     ── the "do these first" table (Now / Soon / Eventually).
 4. Findings (detailed)      ── one section per confirmed finding, ordered by severity.
+4a. Dependency health       ── SCA results: confirmed-reachable CVEs + patch-anyway items (separate).
 5. Needs-validation         ── unconfirmed items, clearly separated.
 6. Appendix                 ── tooling, raw output, references, retest results.
 ```

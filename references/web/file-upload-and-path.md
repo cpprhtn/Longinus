@@ -4,6 +4,32 @@ Two intertwined problems: **getting a malicious file in**, and **reaching files 
 attacker-controlled paths. Together they yield RCE, source/secret disclosure, and SSRF. CWE-434
 (upload), CWE-22 (path traversal), CWE-98 (file inclusion), CWE-29 (zip-slip).
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Path traversal candidates**
+```bash
+rg -n "path\.join\(.*req\.|open\(.*req\.|readFile\(.*req\.|fs\.\w+\(.*req\." .
+```
+- **SKIP if:** `realpath()` or `resolve()` is checked against base directory in the same handler
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: Path Traversal | Severity: High | Fix: Canonicalize path with realpath() and verify it's within the allowed base directory
+
+**STEP 2 — File upload without validation**
+```bash
+rg -n "multer\(|upload\.|\.save\(.*file|move_uploaded_file|FileField|ImageField" .
+```
+- **SKIP if:** content-type validation and non-webroot storage are confirmed in the same handler
+- **FINDING if not skipped:** Type: Unrestricted File Upload | Severity: High | Fix: Validate content-type server-side; store outside webroot with random filenames
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Path traversal (LFI-style file read)
 
 **Find:** any parameter that names a file/path — `?file=`, `?page=`, `?template=`, `?download=`,

@@ -27,17 +27,64 @@
 
 단순한 플레이북 모음이 아닙니다.
 
+- **세 가지 감사 모드 (quick / standard / deep).** Quick 모드는 grep 기반의 기계적 스캔으로 CI 게이트와
+  소형 온디바이스 모델(11B+)에 적합합니다. Standard는 전체 단일 타깃 감사, Deep은 다중 도메인 교차 분석입니다.
 - **체크리스트가 아니라 원리에서 출발합니다.** 정해진 목록을 훑는 대신, 취약점이 발생하는 여섯 가지 근본
   원리(신뢰 경계, 파서 불일치, confused deputy, 상태·시간, 인코딩, 개발자의 암묵적 가정)에서 취약점을 도출합니다
-  → [공격자의 사고법](references/attacker-mindset.md). 아직 분류되지 않은 새로운 유형까지 찾아냅니다.
+  → [패턴 트리거 & 공격자 원리](references/pattern-triggers.md). 아직 분류되지 않은 새로운 유형까지 찾아냅니다.
 - **개별 취약점이 아니라 연계 영향으로 평가합니다.** 단독으로는 낮은 등급이라도, 연결되면 계정 탈취로 이어지는
   취약점들이 있습니다. 그러한 연계는 하나의 Critical로 다룹니다 → [체이닝](references/chaining-and-impact.md).
-- **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. LLM이 가장 취약한 지점이
-  '그럴듯한 허위 취약점'이므로, 낮은 오탐률이 곧 신뢰성입니다 → [심각도 평가](references/severity-and-triage.md).
+- **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. 필수 심각도 게이트가
+  Critical/High 판정을 기계적으로 하향 조정하여, LLM의 고질적인 심각도 인플레이션을 억제합니다
+  → [심각도 평가](references/severity-and-triage.md).
+- **의존성 건강 점검이 통합되어 있습니다.** SCA 도구가 감사 흐름의 일부로 실행되며, 도달 가능성이 확인되지 않은
+  CVE는 Info로만 표기하고 High/Critical로 부풀리지 않습니다.
 - **코드 패턴을 기계적으로 매칭합니다.** [패턴 트리거 테이블](references/pattern-triggers.md)이 코드 패턴을
   취약점 점검으로 직접 연결해 주어, 원리에서 합성하는 과정 없이도 바로 확인이 가능합니다.
 - **한계에 대해 솔직합니다.** [한계 문서](references/limitations.md)가 정적/LLM 분석으로 *찾을 수 없는 것*을
   명시하여, 클린 리포트가 "취약점이 없다"는 뜻이 아님을 분명히 합니다.
+
+## 감사 모드
+
+| 모드 | 용도 | 동작 |
+|---|---|---|
+| **quick** | 빠른 1차 스캔, CI 게이트, **소형 온디바이스 모델 (11B+)** | 각 leaf의 `## Mechanical scan` 섹션에서 grep 기반 기계적 스캔 실행. 고정 심각도, CVSS 미산출, 체이닝 분석 없음. 결과는 테이블 하나. |
+| **standard** | 기본값. 단일 타깃 전체 감사. | 프로파일 → 라우팅 → leaf 전체 분석 → PoC → 심각도 평가 (CVSS 4.0) → 리포트. |
+| **deep** | 정식 다중 도메인 정밀 감사. | Standard + 모든 보조 도메인 quick-check + 도메인 간 체이닝 ([chaining-and-impact.md](references/chaining-and-impact.md)). |
+
+**Quick 모드는 소형 온디바이스 모델에 최적화되어 있습니다** (예: Qwen 3 8B, Llama 3.1 8B). 이들 모델은
+기계적 지시를 따를 수 있지만 자유 추론은 어렵습니다. Quick 모드는 전적으로 패턴 매칭으로만 동작하여 원리
+합성, CVSS 계산, 체이닝 분석이 필요 없습니다. 로컬 모델로 보안 점검을 시작한다면 여기서 출발하세요.
+
+호출 시 모드를 지정합니다: *"quick 보안 감사 실행해 줘"*, *"이 저장소 deep 감사해 줘"*, 또는 보안 질문을 하면
+**standard**가 기본입니다.
+
+## 의존성 CVE 점검
+
+Longinus는 자체 CVE 데이터베이스를 갖고 있지 않습니다. 각 생태계의 SCA 도구에 위임하고, 그 결과에 자체
+심각도 규칙을 적용합니다:
+
+```
+Step 1   스택 식별 (package.json → Node, requirements.txt → Python, …)
+Step 1.5 해당 SCA 도구 실행:
+           Node → npm audit    Python → pip-audit / osv-scanner
+           Go   → govulncheck  Rust   → cargo audit
+           Ruby → bundler-audit  Java → trivy fs .
+                ↓
+         SCA 도구가 자체 CVE DB 조회
+         (GitHub Advisory DB, OSV, NVD 등)
+                ↓
+         Longinus가 결과를 필터링:
+           도달 가능 경로 확인됨     → 정상 심각도 평가
+           도달 가능성 미확인        → Info / "patch anyway"로만 표기
+           환각 CVE (검증 불가)      → 보고 금지
+                ↓
+         리포트의 "Dependency Health" 섹션에 별도 기재
+```
+
+SCA 도구는 사용자 환경에 설치되어 있어야 합니다. `npm audit`은 Node 프로젝트에 기본 포함되지만,
+`pip-audit`, `trivy`, `govulncheck` 등은 별도 설치가 필요합니다. 도구가 없으면 해당 점검은
+건너뛰게 됩니다 — 이는 스킬이 아닌 환경의 제약입니다.
 
 ## 설치
 
@@ -100,8 +147,8 @@ Longinus/
 │   └── ctf.md  process.md  meta-resources.md
 └── references/                     ← 실제 플레이북 트리
     ├── 00-map.md                   ← 전체 트리 지도 + 증상→파일 점프 테이블
-    ├── authorization-and-scope.md  attacker-mindset.md       ← ⛔ 게이트 + 🧠 공격자 사고법
-    ├── pattern-triggers.md                                   ← 🎯 코드 패턴 → 취약점 매핑 테이블
+    ├── authorization-and-scope.md                            ← ⛔ 인가 게이트
+    ├── pattern-triggers.md                                   ← 🎯 공격자 원리 + 코드 패턴 → 취약점 매핑
     ├── limitations.md                                        ← ⚠️ 이 스킬이 찾을 수 없는 것 (정직한 한계)
     ├── methodology.md  chaining-and-impact.md                ← 진행 절차 + 🔗 발견 연계
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← 거버넌스 spine
@@ -116,5 +163,21 @@ Longinus/
 
 ## 상태
 
-`v0.1.0` — 초기 버전입니다. 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의
-변화에 맞춰 함께 갱신합니다 (정책: [research/meta-resources.md](research/meta-resources.md)).
+도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
+(정책: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.2.0
+
+- 세 가지 감사 모드: quick (grep 기반 기계적 스캔, 소형 온디바이스 모델 11B+) / standard / deep
+- 필수 심각도 게이트 — Critical/High 판정이 기계적 체크리스트를 통과하지 못하면 강제 하향, LLM 심각도
+  인플레이션 억제
+- 통합 의존성 건강 점검(SCA)을 감사 흐름의 Step 1.5로 추가; 도달 가능성 미확인 CVE는 Info로만 표기
+- 세션 오염 경고 및 감사 간 `/clear` 권장 사항 추가
+- 전 22개 도메인 leaf에 `## Mechanical scan` 섹션 추가 (소형 모델 호환)
+- `attacker-mindset.md`를 `pattern-triggers.md`로 통합 (토큰 최적화)
+- 도메인별 quick-check를 SKILL.md에서 각 도메인 README로 이동
+- SKILL.md와 00-map.md 간 라우팅 중복 제거
+
+### v0.1.0
+
+- 초기 버전: 도메인 플레이북, 거버넌스 spine, 참고문헌, 최초 접촉 프로파일링

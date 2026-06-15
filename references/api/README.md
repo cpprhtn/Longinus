@@ -9,6 +9,49 @@ web sinks see [../web/README.md](../web/README.md).
 > ⛔ Gate first. APIs make bulk-extraction trivially easy — be extra careful to stay non-destructive
 > and not exfiltrate real data; a 2–3 record proof suffices.
 
+## ⏱️ First 5 minutes — API quick checks
+
+Run these before the deeper analysis below.
+
+1. Build endpoint inventory from route definitions
+2. For each endpoint with an object ID: is ownership checked? → BOLA sweep
+3. Are admin endpoints guarded by role/permission middleware? → BFLA sweep
+4. Check response serialization: do endpoints return full model objects? → data exposure
+5. Is there rate limiting on auth endpoints (login, OTP, reset)?
+
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — BOLA: Object lookup without ownership**
+```bash
+rg -n "findById\(|findByPk\(|\.get\(.*params\.|Model\.objects\.get\(pk=" .
+```
+- **SKIP if:** same handler includes ownership filter (`user_id`, `owner_id`, `org_id`, `tenant_id`)
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: BOLA (Broken Object Level Authorization) | Severity: High | Fix: Scope query by authenticated user (e.g., `AND user_id = ?`)
+
+**STEP 2 — Mass assignment**
+```bash
+rg -n "Object\.assign\(.*req\.body|User\(\*\*request\.data\)|\.update\(req\.body\)|findByIdAndUpdate\(.*req\.body" .
+```
+- **SKIP if:** a DTO or allowlist filters fields before assignment
+- **FINDING if not skipped:** Type: Mass Assignment | Severity: High | Fix: Use an allowlist of updatable fields before binding request body
+
+**STEP 3 — Full object serialization (excessive data exposure)**
+```bash
+rg -n "\.to_dict\(\)|\.toJSON\(\)|res\.json\(user\)|serialize.*all|jsonify\(.*\.query\.|__dict__" .
+```
+- **SKIP if:** a response DTO or serializer explicitly excludes sensitive fields
+- **FINDING if not skipped:** Type: Excessive Data Exposure | Severity: Medium | Fix: Use explicit response DTOs that include only allowed fields
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Discover the API contract first
 
 You can't test endpoints you don't know. Build the full inventory:

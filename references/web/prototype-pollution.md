@@ -6,6 +6,25 @@ every object then inherits. Alone it's inert; it becomes critical when a **gadge
 reads an undefined property) turns the polluted value into **XSS, RCE, SSRF, auth bypass, or DoS**. The
 art is finding the source→gadget chain. CWE-1321.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Deep merge with user input**
+```bash
+rg -n "_.merge\(|_.defaultsDeep\(|deepmerge\(|Object\.assign\(.*req\.|extend\(.*req\." .
+```
+- **SKIP if:** input is validated to reject `__proto__`, `constructor`, `prototype` keys
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: Prototype Pollution | Severity: High | Fix: Validate input to reject __proto__/constructor/prototype keys, or use Map instead of plain objects
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Two worlds
 
 - **Client-side PP** — the sink is in browser JS. A polluted property flows into a DOM XSS gadget

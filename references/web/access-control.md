@@ -5,6 +5,33 @@ control asks "are you allowed to do *this* to *that*?" AI-generated code almost 
 former and forgets the latter — the endpoint exists, the query runs, nobody checks ownership. CWE-639,
 CWE-284, CWE-862/863, CWE-22.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Object lookup without ownership filter**
+```bash
+rg -n "findById\(|findByPk\(|\.get\(.*params\.|\.get\(.*args\[|Model\.objects\.get\(pk=" .
+```
+- **SKIP if:** the same function/handler includes an ownership filter (`user_id`, `owner`, `org_id`)
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: IDOR / BOLA | Severity: High | Fix: Add ownership check to the query (e.g., `AND user_id = ?`)
+
+**STEP 2 — Routes without auth middleware**
+```bash
+rg -n "app\.(get|post|put|delete|patch)\(|router\.(get|post|put|delete|patch)\(" .
+```
+- **SKIP if:** the route has auth middleware in its argument list (`authenticate`, `auth`, `login_required`, `guard`)
+- **SKIP if:** the route is genuinely public (health check, static asset, login page)
+- **FINDING if not skipped:** Type: Missing Authentication | Severity: High | Fix: Add authentication middleware to the route
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Sub-classes
 
 - **IDOR / BOLA** (object-level) — you can read/modify *another user's object* by changing an ID.

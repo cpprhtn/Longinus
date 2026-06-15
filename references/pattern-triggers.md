@@ -1,18 +1,95 @@
-# 🎯 Pattern → vulnerability trigger table (mechanical lookup)
+# 🎯 Pattern triggers & attacker principles (unified lookup)
 
-When auditing source code, use this table as a **direct pattern-match**. If you see the
-code pattern in column 1, immediately check for the vulnerability in column 2 using
-the referenced leaf. This is the pre-synthesized form of
-[attacker-mindset.md](attacker-mindset.md) — the same principles, flattened into a
-lookup table so nothing is missed even under time pressure.
+When auditing source code, use this file two ways:
+- **Pattern-match (mechanical):** scan code, match a row in the tables below, open the
+  referenced leaf for the full find→confirm→fix procedure.
+- **Principle-driven (generative):** walk the six principles over the target; each one
+  tells you *where it must break*, even for patterns not yet in the tables.
 
 > **How to use:** scan the codebase (grep or read), match patterns below, open the
-> referenced leaf for the full find→confirm→fix procedure. One pattern may appear
-> multiple times across languages — check all that match the target stack.
+> referenced leaf. One pattern may appear multiple times across languages — check all
+> that match the target stack. For patterns not in the table, reason from the six
+> principles.
 
 ---
 
-## ⛔ DO NOT report as a vulnerability if…
+## 🧠 The six generative principles
+
+A vulnerability is the gap between what the system was *designed* to do and what it
+*actually* does with hostile input. These six principles *generate* all vulnerability
+classes — including ones with no name yet.
+
+### 1. Trust boundaries — untrusted data crosses into a context that trusts it
+
+Every vulnerability is untrusted data crossing into a trusting context (SQL, shell, HTML,
+URL fetch, tool call). Map where data enters and what trusts it downstream.
+
+**Quick heuristic:** grep for every place user input is read (`req.body`, `req.params`,
+`request.form`, `@RequestParam`). For each, trace forward: does it reach a sink (DB,
+shell, HTML, file path, URL fetch, LLM prompt) without sanitization between? If yes →
+open the matching sink's leaf.
+
+### 2. Parser / impedance differentials — two components disagree on the same bytes
+
+Bugs live where the *validator* and the *consumer* parse input differently — the
+validation is theater, you smuggle past it.
+
+**Quick heuristic:** look for input validated *before* being passed to a different
+library that re-parses it. URL validation then `fetch()`; path validation then `open()`;
+HTML sanitization then DOM insertion. If validator ≠ consumer → differential possible.
+
+### 3. Confused deputy — a privileged component lends its authority to an attacker
+
+A powerful component (server, browser, agent, cloud role) acts on input from a weak
+caller without re-checking whose authority applies.
+
+**Quick heuristic:** find every outbound request (`fetch`, `requests.get`, `curl`), file
+operation, or cloud API call. Can the *user* control the target/arguments? If yes →
+confused deputy. Also: any `PassRole`/`AssumeRole`/`actAs` — who can trigger it?
+
+### 4. State, time & order — break the atomicity or sequence assumption
+
+Systems assume operations are atomic and happen in the intended order. Do it twice at
+once, out of order, skip a step, replay an old token.
+
+**Quick heuristic:** grep for `if.*balance|if.*count|if.*used|if.*stock|if.*quantity`.
+Is the check AND the modification in the **same DB transaction with a row lock**? If
+separate (read → logic → write) → race candidate. Also: multi-step flows — can step N
+be reached without completing step N-1?
+
+### 5. Encoding layers — the value you check is not the value that runs
+
+Validated input mutates before reaching the sink via canonicalization, decode round-trips,
+or second-order storage. You validate one form; a different form executes.
+
+**Quick heuristic:** search for `| safe`, `mark_safe`, `dangerouslySetInnerHTML`,
+`v-html`, `noescape` — these disable auto-escaping. Also: data stored in DB then later
+rendered without escaping (stored XSS); any blocklist-based filter (they almost always
+miss an encoding variant).
+
+### 6. The developer's "impossible" — unstated assumptions the developer never defends
+
+"The client can't change this," "nobody sends a negative number," "you can't reach this
+endpoint." Every assumption is an attack surface.
+
+**Quick heuristic:** search for client-sent values that affect money, access, or state:
+`req.body.price`, `req.body.role`, `req.body.isAdmin`. Also: scan the route table for
+endpoints with no auth middleware — is each one genuinely public?
+
+### Applying the principles
+
+1. At **Profile / threat-model**, walk all six over the target. Most light up for any
+   real app.
+2. Each lit principle names the patterns to look for — match them in the tables below.
+3. Found something? Push it through
+   [chaining-and-impact.md](chaining-and-impact.md) — a principle often reveals the
+   *next* boundary to cross.
+4. A principle tells you *where to look*, not that a bug *exists* — still **prove it or
+   park it** ([severity-and-triage.md](severity-and-triage.md)).
+
+---
+
+## ⛔ DO NOT report as a vulnerability if...
 
 Before filing a finding, verify the pattern is actually exploitable. These guards
 prevent the most common false positives:
@@ -34,6 +111,21 @@ prevent the most common false positives:
 7. **The "missing header" has no demonstrable exploit** — don't report a missing
    `X-Content-Type-Options` without showing a content-type sniffing attack that actually
    fires.
+
+**Principle-based guards** — when a principle lights up but it's NOT a bug:
+
+| Principle | DO NOT report if... |
+|---|---|
+| 1. Trust boundary crossed | The framework auto-sanitizes at that boundary (parameterized ORM, React JSX auto-escape, Go `html/template`) |
+| 2. Parser differential | Both parsers normalize to the same result *before* the security check, or only one parser is in the path |
+| 3. Confused deputy | The deputy re-checks authorization **as the caller** (not its own identity) before acting |
+| 4. State/time/order | The operation is inside a DB transaction with appropriate isolation level + row lock, or uses an atomic conditional update |
+| 5. Encoding mutation | Input is canonicalized *before* the security check, and the check uses the same encoding form as the sink |
+| 6. Developer's "impossible" | The assumption IS defended — just not where you looked (middleware, decorator, framework convention, global filter) |
+
+**The meta-guard:** if you cannot construct a concrete input that demonstrates the
+vulnerability, move it to **"Needs Validation"** rather than reporting it as confirmed.
+See [limitations.md](limitations.md) for what static analysis fundamentally cannot reach.
 
 When in doubt: state *"This pattern could be vulnerable to [X] if [precondition].
 Verify that [specific defense] is in place."* — this is the **Needs Validation** bucket
@@ -107,27 +199,11 @@ from [severity-and-triage.md](severity-and-triage.md).
 |---|---|---|---|
 | `api_key = "sk-..."` / `password = "..."` / `token = "ghp_..."` in source | **Hardcoded secret** | [secrets-and-supply-chain/secret-detection.md](../secrets-and-supply-chain/secret-detection.md) | OK if it's a placeholder/example (e.g., `"your-api-key-here"` or in docs/tests with fake values) |
 | No `package-lock.json` / `yarn.lock` / `poetry.lock` committed | **Unpinned dependencies** | [secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md) | OK if an alternative lockfile mechanism exists |
-| Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package |
+| Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package. **Unconfirmed reachability → Info / patch-anyway, not High/Critical** (see severity gates in [severity-and-triage.md](severity-and-triage.md)) |
 
 ---
 
-## How this table relates to the principles
+When you encounter a pattern not in this table, reason from the six principles above —
+that's how new bug classes get found.
 
-Each row above descends from one or more of the six generative principles in
-[attacker-mindset.md](attacker-mindset.md):
-
-| Principle | Rows it generates |
-|---|---|
-| 1. Trust boundaries | SQLi, XSS, command injection, SSTI, SSRF, deserialization, model output→sink |
-| 2. Parser differentials | Prototype pollution, path traversal, redirect_uri bypass, JWT alg confusion |
-| 3. Confused deputy | SSRF, CSRF, OAuth redirect theft, agent excessive agency, IAM PassRole |
-| 4. State/time/order | Race conditions, step-skipping, coupon reuse, missing state param |
-| 5. Encoding layers | XSS via `safe`/`mark_safe`, double-decode path traversal, second-order injection |
-| 6. Developer's "impossible" | Mass assignment, price tampering, IDOR, hardcoded secrets, public storage |
-
-When you encounter a pattern not in this table, go back to these principles and reason
-from them.
-
----
-
-Back to the [tree](00-map.md) · [attacker-mindset.md](attacker-mindset.md).
+Back to the [tree](00-map.md).

@@ -5,6 +5,25 @@ instantiates** — and in many languages, the side effects of object constructio
 straight to **RCE**. It's high-severity and easy to miss because the dangerous call looks innocent.
 CWE-502.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Unsafe deserialization**
+```bash
+rg -n "pickle\.load|pickle\.loads|yaml\.load\(|yaml\.unsafe_load|Marshal\.load|unserialize\(|ObjectInputStream|readObject\(\)|JsonConvert\.DeserializeObject" .
+```
+- **SKIP if:** the input is from a trusted internal source the attacker cannot control
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: Insecure Deserialization | Severity: Critical | Fix: Use safe alternatives (json, yaml.safe_load, weights_only=True); never deserialize untrusted input
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Where it hides
 
 Any place the app turns bytes from an untrusted source back into objects:

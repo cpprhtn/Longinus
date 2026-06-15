@@ -13,6 +13,16 @@ red-team an AI feature. References: OWASP GenAI/LLM Top 10:2025, MITRE ATLAS, NI
 > [../web/](../web/README.md) and [../secrets-and-supply-chain/](../secrets-and-supply-chain/README.md)
 > too. The model's output is just another untrusted input to the rest of your system.
 
+## ⏱️ First 5 minutes — AI/LLM quick checks
+
+Run these before descending into the leaves below.
+
+1. Find all model loading calls → `trust_remote_code=True`? pickle-based? unpinned model refs?
+2. Enumerate all tool/function definitions → what real permissions does each have?
+3. Trace where model output goes → does it reach `innerHTML` / SQL / shell / `eval` / URL fetch?
+4. Find RAG/vector queries → is there a tenant/user filter at query time?
+5. Read the system prompt → does it contain secrets or sensitive logic?
+
 ## OWASP Top 10 for LLM Applications 2025
 
 | ID | Risk | Where / how |

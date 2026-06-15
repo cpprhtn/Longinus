@@ -36,7 +36,44 @@ CVSS under- or over-states real risk constantly. Re-rank by asking:
 - **Blast radius?** One user vs all users vs all tenants.
 
 State both: "CVSS 8.1 (High); rated **Critical** here because it exposes all customers' PII
-unauthenticated."
+unauthenticated." The mandatory gates below apply **equal downward force** — override upward only
+with explicit justification.
+
+## Mandatory severity gates (checklist before Critical/High)
+
+An LLM auditor's dominant failure mode is **severity inflation** — defaulting to higher severity
+when uncertain. Use these mechanical gates as a **mandatory final check** before assigning
+Critical or High. If any required condition is not met, **force the severity DOWN one level**.
+
+### Critical gate — ALL must be true, or downgrade to High
+
+- [ ] **Unauthenticated or low-privilege attacker** can trigger it (PR:None or PR:Low)
+- [ ] **No user interaction required** to exploit (UI:None)
+- [ ] **Confirmed impact** on confidentiality, integrity, OR availability of the
+      *subsequent system* or *crown-jewel data* (not just the vulnerable component)
+- [ ] **Reproducible PoC exists** (not theoretical, not "if conditions X and Y hold")
+- [ ] **Blast radius is multi-user or multi-tenant** (not self-only)
+- [ ] **No unrealistic preconditions** (e.g., requires MitM + admin session + specific
+      race timing = not Critical)
+
+If ANY box is unchecked: **downgrade to High.** State which condition failed.
+
+### High gate — ALL must be true, or downgrade to Medium
+
+- [ ] **Attack complexity is realistic** (not a multi-step chain with unproven links)
+- [ ] **The vulnerable code path is reachable** from production input (not dead code,
+      not behind a feature flag, not test-only)
+- [ ] **Impact is demonstrated, not assumed** (you showed the data/action, not "could
+      potentially lead to...")
+- [ ] **Not a version-only CVE** without confirmed reachability of the vulnerable function
+
+If ANY box is unchecked: **downgrade to Medium.** State which condition failed.
+
+### Downward override principle
+
+The business-impact lens (above) can move severity in EITHER direction. When overriding
+upward, state the business justification explicitly. When the gate fails, the downward
+force is **MANDATORY** — the gate is not optional, even when "it feels Critical."
 
 ## Classify every finding
 
@@ -98,6 +135,9 @@ For each candidate finding:
   same root cause as an existing finding?  ── yes ──► merge as another instance
        │ no
   assign: CWE + OWASP mapping + CVSS 4.0 vector + fix-priority (Now/Soon/Eventually)
+       │
+  if Critical or High: run the mandatory severity gate checklist (above)
+       │                if any condition fails ──► downgrade one level, state why
 ```
 
 ## Severity quick-reference (typical ratings)
@@ -115,7 +155,8 @@ For each candidate finding:
 | Missing security headers / verbose errors | Low–Info | hardening |
 | Outdated dependency, no reachable path | Low–Info | note + patch anyway |
 
-These are defaults — the business-impact lens can move any of them.
+These are defaults before applying the mandatory gates. Apply the gate checklist to every
+Critical/High finding before finalizing.
 
 ## References
 

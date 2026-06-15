@@ -9,6 +9,25 @@ funds, change settings → account takeover). CWE-352.
 > `Authorization: Bearer` header APIs are largely immune *because the browser won't auto-add the
 > header* — but watch hybrid apps that accept a cookie fallback.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — State-changing handlers without CSRF protection**
+```bash
+rg -n "app\.(post|put|delete|patch)\(|router\.(post|put|delete|patch)\(" .
+```
+- **SKIP if:** the application uses Bearer tokens (not cookies) for auth — CSRF is not applicable
+- **SKIP if:** CSRF middleware is applied globally
+- **FINDING if not skipped:** Type: CSRF | Severity: Medium | Fix: Add CSRF token validation to all state-changing endpoints
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Where it hides
 
 Any state-changing endpoint without anti-CSRF protection: password/email change, settings, money

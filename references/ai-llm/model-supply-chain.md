@@ -7,6 +7,32 @@ supply chain becomes a first-class RCE + integrity surface. This is **insecure d
 ([../web/deserialization.md](../web/deserialization.md)) wearing a `.pt` extension, plus the
 dependency problems in [../secrets-and-supply-chain/dependency-supply-chain.md](../secrets-and-supply-chain/dependency-supply-chain.md).
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — trust_remote_code enabled**
+```bash
+rg -n "trust_remote_code\s*=\s*True" .
+```
+- **SKIP if:** the repository is your own AND pinned to a verified commit hash
+- **FINDING if not skipped:** Type: Arbitrary Code Execution on Model Load (LLM03) | Severity: Critical | Fix: Set trust_remote_code=False; audit remote code before enabling
+
+**STEP 2 — Unsafe model deserialization**
+```bash
+rg -n "torch\.load\(|pickle\.load|joblib\.load|keras\.models\.load_model" .
+```
+- **SKIP if:** `weights_only=True` is specified (torch) or input is from a trusted internal source
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: Model Deserialization → RCE (LLM03) | Severity: Critical | Fix: Use torch.load(weights_only=True) or safe alternatives (safetensors)
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Format risk matrix (know what executes on load)
 
 | Format / loader | Risk on load | Why |

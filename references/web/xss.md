@@ -4,6 +4,32 @@ Attacker-controlled data is reflected into a page and executed as script in the 
 running with the victim's session/origin. Impact ranges from session theft and account takeover to
 self-propagating worms. CWE-79.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Explicit auto-escape disabling**
+```bash
+rg -n "dangerouslySetInnerHTML|v-html|\| safe|mark_safe|Markup\(|\.raw\(|noescape|\{!! " .
+```
+- **SKIP if:** path contains `/test/`, `/mock/`, `__tests__/`, `fixtures/`
+- **SKIP if:** the variable is a static/trusted string, not user input
+- **FINDING if not skipped:** Type: XSS (auto-escape disabled) | Severity: High | Fix: Remove escape bypass or sanitize with DOMPurify/Bleach before rendering
+
+**STEP 2 — DOM sink usage**
+```bash
+rg -n "innerHTML|outerHTML|insertAdjacentHTML|document\.write\(|document\.writeln\(" .
+```
+- **SKIP if:** path contains `/test/` or the value is a static string/template literal without variables
+- **FINDING if not skipped:** Type: DOM XSS | Severity: Medium | Fix: Use textContent or sanitize input before DOM insertion
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Three types
 
 - **Reflected** — payload in the request is echoed straight into the response (needs the victim to

@@ -6,7 +6,7 @@ thing that separates expert output from a tool dump. A page of "Lows" that compo
 takeover **is a Critical**; only a human-grade attacker rates it that way.
 
 This is promoted from a step in the loop to a first-class discipline on purpose. The lens that finds
-the links is [attacker-mindset.md](attacker-mindset.md); the place chained impact gets re-scored is
+the links is [pattern-triggers.md](pattern-triggers.md); the place chained impact gets re-scored is
 [severity-and-triage.md](severity-and-triage.md); the loop hand-off is
 [methodology.md](methodology.md) §6.
 

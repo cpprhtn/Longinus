@@ -31,6 +31,22 @@ These *can* be found but with lower confidence — report them as **"Needs Valid
 | 3 | **Non-obvious multi-step chains** | Can identify individual links but may miss multi-step chains that require specific ordering or preconditions |
 | 4 | **Framework "magic"** | ORMs, middleware, decorators, annotations may handle security transparently — may false-positive if the framework protects it invisibly |
 
+## Session contamination (multi-audit sessions)
+
+When multiple audits run in the same conversation, prior findings contaminate the
+model's analysis of subsequent targets:
+
+| # | Effect | Manifestation |
+|---|---|---|
+| 1 | **Confirmation bias** | Findings from project A cause over-reporting of the same class in project B |
+| 2 | **Severity anchoring** | High/Critical findings in the first audit inflate severity estimates for the second |
+| 3 | **Pattern fixation** | The model over-indexes on patterns it already found, missing novel issues |
+| 4 | **Context overflow** | Prior audit content fills the context window, reducing capacity for the current target |
+
+**Mitigation:** run `/clear` between audits of different targets. Each audit should
+start with a clean context. This is a fundamental limitation of session-based LLM
+analysis, not a skill defect.
+
 ## DO NOT report as a finding
 
 - Code in **test files, mocks, fixtures, or documentation examples** — not production

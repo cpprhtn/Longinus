@@ -5,6 +5,31 @@ AI assistants pull in dependencies recklessly. This covers known-vulnerable depe
 AI-specific **slopsquatting** threat, lockfile/integrity hygiene, and build/CI security. CWE-1104,
 CWE-1357, CWE-829, CWE-494.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Run SCA tool**
+```bash
+npm audit --omit=dev 2>/dev/null; pip-audit 2>/dev/null; osv-scanner -r . 2>/dev/null
+```
+- **SKIP if:** no package manager files found for that ecosystem
+- **FINDING if not skipped:** Report each CVE found. Type: Vulnerable Dependency | Severity: Info (unless reachability confirmed → per normal triage) | Fix: Update to patched version per tool recommendation
+
+**STEP 2 — Missing lockfile**
+```bash
+ls package-lock.json yarn.lock pnpm-lock.yaml poetry.lock Pipfile.lock Gemfile.lock go.sum Cargo.lock 2>/dev/null
+```
+- **SKIP if:** at least one lockfile exists for the detected ecosystem
+- **FINDING if not skipped:** Type: Unpinned Dependencies | Severity: Medium | Fix: Generate and commit a lockfile for deterministic builds
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## 1. Known-vulnerable dependencies (SCA)
 
 LLMs suggest libraries from their training data — often **versions with since-patched CVEs**. The fix

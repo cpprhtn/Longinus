@@ -5,6 +5,38 @@ and **IAM privilege escalation** — a single over-permissioned role or leaked k
 account takeover. This leaf is read-mostly enumeration + known priv-esc patterns; **test only accounts
 you own or are explicitly authorized for.** CWE-732, CWE-269, CWE-284.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — IAM wildcard policies**
+```bash
+rg -n "Action.*\"\*\"|Resource.*\"\*\"|Effect.*Allow.*Action.*\*" .
+```
+- **SKIP if:** it's a `Deny` policy or scoped by a tight `Condition` block
+- **FINDING if not skipped:** Type: Over-Privileged IAM | Severity: High | Fix: Apply least-privilege; replace wildcards with specific actions/resources
+
+**STEP 2 — Public storage exposure**
+```bash
+rg -n "public-read|allUsers|allAuthenticatedUsers|BlockPublicAccess.*false|block_public_access.*false" .
+```
+- **SKIP if:** the bucket intentionally serves public static assets with no sensitive data
+- **FINDING if not skipped:** Type: Public Storage Exposure | Severity: High | Fix: Enable block-public-access; use signed URLs for private content
+
+**STEP 3 — IMDSv1 enabled**
+```bash
+rg -n "http_tokens.*optional|HttpTokens.*optional|metadata_options|instance_metadata" .
+```
+- **SKIP if:** `http_tokens = "required"` is set (IMDSv2 enforced)
+- **FINDING if not skipped:** Type: IMDSv1 Enabled → Credential Theft via SSRF | Severity: Critical | Fix: Require IMDSv2 (http_tokens = "required")
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## 1. Exposed storage (the classic leak)
 
 - **AWS S3 / GCP GCS / Azure Blob** public read or **write** (write is worse — defacement/malware

@@ -5,6 +5,32 @@ Can an attacker **get in** (bypass/guess/steal credentials), **stay in** (weak/f
 identity (OAuth/OIDC/JWT/SAML/MFA) lives in [../identity/README.md](../identity/README.md). CWE-287,
 CWE-384, CWE-613, CWE-307, CWE-620.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Routes without auth middleware**
+```bash
+rg -n "app\.(get|post|put|delete)\(|@app\.route|router\.(get|post|put|delete)" .
+```
+- **SKIP if:** the route handler or decorator includes auth check (`@login_required`, `authenticate`, `auth_guard`, `isAuthenticated`)
+- **SKIP if:** the endpoint is genuinely public (login, register, health, static)
+- **FINDING if not skipped:** Type: Missing Authentication | Severity: High | Fix: Add authentication middleware to the route
+
+**STEP 2 — Weak session/token configuration**
+```bash
+rg -n "httpOnly.*false|secure.*false|sameSite.*none|session.*secret.*=.*\"|maxAge.*[0-9]{8,}" .
+```
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: Insecure Session Config | Severity: Medium | Fix: Set httpOnly=true, secure=true, sameSite=strict; use strong random secret
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Test surface
 
 Login, signup, logout, "remember me", password reset/change, email/phone change, MFA enrollment &

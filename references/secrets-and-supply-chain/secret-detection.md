@@ -5,6 +5,32 @@ move-fast codebases. A single leaked production key can mean total compromise �
 secrets were found across one scan of ~5,600 vibe-coded apps. This is the highest-confidence,
 fastest-payoff check in Longinus.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Hardcoded secrets in source**
+```bash
+rg -n -i "(api[_-]?key|secret[_-]?key|password|token|credential)\s*[:=]\s*[\"'][^\s\"']{8,}" .
+```
+- **SKIP if:** it's a placeholder/example value (e.g., `"your-api-key-here"`, `"changeme"`, `"xxx"`)
+- **SKIP if:** path contains `/test/`, `/mock/`, `/fixtures/`, `/docs/`, `/examples/`
+- **FINDING if not skipped:** Type: Hardcoded Secret | Severity: High | Fix: Move secret to environment variable or secret manager; rotate the exposed credential
+
+**STEP 2 — High-entropy secret patterns**
+```bash
+rg -n "AKIA[0-9A-Z]{16}|sk_live_|ghp_[A-Za-z0-9]{36}|glpat-|xox[bpras]-|-----BEGIN.*PRIVATE KEY" .
+```
+- **SKIP if:** path contains `/test/`, `/mock/`, `/docs/`
+- **FINDING if not skipped:** Type: Hardcoded Secret (high-confidence pattern) | Severity: Critical | Fix: Rotate immediately; move to secret manager
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## What counts as a secret
 
 API keys, OAuth client secrets, DB connection strings/passwords, cloud access keys (AWS

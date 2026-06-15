@@ -9,6 +9,12 @@ prefer self-targeted proofs. CWE-444 (HTTP request/response smuggling), CWE-444/
 > ⚠️ Smuggling can poison requests of *real users*. On live targets use a benign collaborator payload
 > and target **your own** session/connection; never queue a payload that harms other users. Gate first.
 
+## Mechanical scan
+
+> **Not suitable for quick mode.** Request smuggling/desync requires understanding the
+> proxy/CDN chain and protocol-level testing that cannot be detected by code pattern
+> matching. Skip this leaf in quick mode; test in standard/deep mode only.
+
 ## Sub-classes
 
 - **Classic request smuggling (HTTP/1.1)** — front-end and back-end disagree on request length:

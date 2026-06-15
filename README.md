@@ -29,22 +29,70 @@ target needs).
 
 Not just another playbook pack:
 
+- **Three audit modes (quick / standard / deep).** Quick mode runs mechanical grep-based scans with
+  fixed severities — ideal for CI gates and small on-device models (11B+). Standard mode is a full
+  single-target audit. Deep mode sweeps all domains with cross-domain chaining analysis.
 - **Reasons from principles, not a checklist.** Instead of walking a fixed list, it derives bugs from
   six root principles that *generate* vulnerability classes — trust boundaries, parser differentials,
   confused deputy, state & time, encoding, the developer's unstated assumptions →
-  [the attacker's mindset](references/attacker-mindset.md). It catches classes that don't even have a
-  name yet.
+  [pattern triggers & attacker principles](references/pattern-triggers.md). It catches classes that
+  don't even have a name yet.
 - **Rates findings by chained impact, not in isolation.** Issues that are individually "low" can
   compose into account takeover; that chain is treated as one **Critical** →
   [chaining](references/chaining-and-impact.md).
-- **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. An LLM's
-  weakest point is the confident hallucinated bug, so a low false-positive rate is what makes the
-  output trustworthy → [severity & triage](references/severity-and-triage.md).
+- **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. Mandatory
+  severity gates force Critical/High findings *down* when preconditions aren't met — an LLM's weakest
+  point is severity inflation → [severity & triage](references/severity-and-triage.md).
+- **Integrated dependency health checks.** SCA tools run as part of the audit flow; CVEs without
+  confirmed reachability are flagged Info-only, not inflated to High/Critical.
 - **Mechanical pattern lookup for code audits.** A
   [pattern-trigger table](references/pattern-triggers.md) maps code patterns directly to
   vulnerability checks with false-positive guards — no principle synthesis needed.
 - **Honest about its limits.** A [limitations doc](references/limitations.md) says what static/LLM
   analysis *cannot* find, so a clean report never implies "no vulnerabilities exist."
+
+## Audit modes
+
+| Mode | When to use | What happens |
+|---|---|---|
+| **quick** | Fast first pass, CI gate checks, **small on-device models (11B+)** | Runs mechanical grep scans from each leaf's `## Mechanical scan` section. Fixed severities, no CVSS scoring, no chaining analysis. One table of findings. |
+| **standard** | Default. Full audit for one target. | Profile → route → full leaf analysis → PoC → triage (CVSS 4.0) → report. |
+| **deep** | Comprehensive formal audit, multi-domain sweep. | Standard + all secondary domain quick-checks + cross-domain chaining ([chaining-and-impact.md](references/chaining-and-impact.md)). |
+
+**Quick mode is designed for small on-device models** (e.g., Qwen 3 8B, Llama 3.1 8B) that can
+follow mechanical instructions but struggle with open-ended reasoning. It works entirely through
+pattern matching — no principle synthesis, no CVSS calculation, no chain analysis. If you're running
+a local model for security checks, start here.
+
+Specify the mode when invoking: *"run a quick security audit"*, *"deep audit this repo"*, or just
+ask a security question (defaults to **standard**).
+
+## Dependency CVE checks
+
+Longinus does not have its own CVE database. It delegates to the ecosystem's SCA tools and applies
+its own severity rules on top:
+
+```
+Step 1   Identify the stack (package.json → Node, requirements.txt → Python, …)
+Step 1.5 Run the matching SCA tool:
+           Node → npm audit    Python → pip-audit / osv-scanner
+           Go   → govulncheck  Rust   → cargo audit
+           Ruby → bundler-audit  Java → trivy fs .
+                ↓
+         SCA tool queries its CVE database
+         (GitHub Advisory DB, OSV, NVD, etc.)
+                ↓
+         Longinus filters the results:
+           reachable code path confirmed  → normal severity triage
+           reachability NOT confirmed     → Info / "patch anyway" only
+           hallucinated CVE (unverifiable)→ DO NOT report
+                ↓
+         Reported in a separate "Dependency Health" section
+```
+
+The SCA tools must be installed in the environment. `npm audit` comes with Node; others
+(`pip-audit`, `trivy`, `govulncheck`, …) require separate installation. If a tool is missing,
+that check is skipped — this is an environment constraint, not a skill limitation.
 
 ## Install
 
@@ -109,8 +157,8 @@ Longinus/
 │   └── ctf.md  process.md  meta-resources.md
 └── references/                     ← the domain tree (the playbooks)
     ├── 00-map.md                   ← master navigable tree + signal→file jump table
-    ├── authorization-and-scope.md  attacker-mindset.md       ← ⛔ gate + 🧠 the generative lens
-    ├── pattern-triggers.md                                   ← 🎯 code pattern → vulnerability lookup table
+    ├── authorization-and-scope.md                            ← ⛔ authorization gate
+    ├── pattern-triggers.md                                   ← 🎯 attacker principles + code pattern → vulnerability lookup
     ├── limitations.md                                        ← ⚠️ what this skill cannot find (honest limits)
     ├── methodology.md  chaining-and-impact.md                ← lifecycle + 🔗 compose findings → impact
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← the governance spine
@@ -125,5 +173,22 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 
 ## Status
 
-`v0.1.0` — initial tree. The domain leaves and the `research/` bibliography are living documents;
-extend them as techniques evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
+The domain leaves and `research/` bibliography are living documents; extend them as techniques
+evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.2.0
+
+- Three audit modes: quick (mechanical grep scans, small on-device models 11B+) / standard / deep
+- Mandatory severity gates — Critical and High findings must pass mechanical checklists or get
+  downgraded, suppressing LLM severity inflation
+- Integrated dependency health checks (SCA) as Step 1.5 in the audit flow; CVEs without confirmed
+  reachability are Info-only
+- Session contamination warnings and `/clear` recommendation between audits
+- `## Mechanical scan` sections added to all 22 domain leaves for small-model compatibility
+- `attacker-mindset.md` merged into `pattern-triggers.md` (token optimization)
+- Domain quick-checks moved from SKILL.md to each domain README
+- Routing deduplication between SKILL.md and 00-map.md
+
+### v0.1.0
+
+- Initial tree: domain playbooks, governance spine, bibliography, first-contact profiling

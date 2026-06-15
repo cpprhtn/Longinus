@@ -8,6 +8,39 @@ References: OAuth 2.0 Security BCP (RFC 9700), JWT BCP (RFC 8725), OpenID Connec
 
 > ⛔ Gate first. Token theft demos must use your own test accounts; never capture real users' tokens.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — JWT decode without algorithm pin**
+```bash
+rg -n "jwt\.decode\(|jwt\.verify\(|jose\." .
+```
+- **SKIP if:** `algorithms=[...]` is explicitly specified with a single algorithm family
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: JWT Algorithm Confusion | Severity: High | Fix: Pin algorithms to a single family (e.g., `algorithms=["RS256"]`)
+
+**STEP 2 — JWT signature verification disabled**
+```bash
+rg -n "verify=False|verify_signature.*False|options.*verify.*false" .
+```
+- **SKIP if:** this is in logging/debugging code that never trusts the claims for auth decisions
+- **FINDING if not skipped:** Type: JWT Signature Bypass | Severity: Critical | Fix: Always verify JWT signatures; never disable verification in production code
+
+**STEP 3 — OAuth missing state parameter**
+```bash
+rg -n "authorize_url|authorization_endpoint|/authorize\?|oauth.*callback|redirect_uri" .
+```
+- **SKIP if:** a `state` parameter is generated and validated in the same flow
+- **FINDING if not skipped:** Type: OAuth CSRF (missing state) | Severity: High | Fix: Generate a cryptographic random state parameter and validate it on callback
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## JWT (JSON Web Tokens) — test every claim and the signature
 
 JWTs are tamper-evident *only if verified correctly*. Common, high-impact flaws:

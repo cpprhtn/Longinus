@@ -10,6 +10,16 @@ Maps to **OWASP A02:2025 (Security Misconfiguration)**, **CIS Benchmarks**, and 
 > accounts/resources you own or are explicitly authorized for; default to **config review** (read-only)
 > over live exploitation.
 
+## ⏱️ First 5 minutes — Cloud/IaC quick checks
+
+Run these before the deeper config review below.
+
+1. `rg "Action.*\\*|Resource.*\\*|public-read|allUsers|0\\.0\\.0\\.0/0"` → immediate red flags
+2. Check for IMDSv1 (`http_tokens = "optional"` or missing metadata block)
+3. Check Dockerfiles for `USER root` / unpinned base images / secrets in build args
+4. Check for secrets in `.tf` / `tfvars` / `docker-compose.yml` / env files
+5. Check k8s manifests for `privileged: true` / `hostPath` / `cluster-admin` binding
+
 ## Branch map
 
 | Leaf | Covers |

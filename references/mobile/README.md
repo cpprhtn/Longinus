@@ -13,6 +13,41 @@ trusts the client. Maps to **OWASP MASVS / MASTG** (the mobile equivalent of ASV
 > **[HackTricks Mobile](https://book.hacktricks.wiki/)**; the backend is usually the real prize — pivot
 > to [../api/README.md](../api/README.md).
 
+## ⏱️ First 5 minutes — Mobile quick checks
+
+Run these before the deeper analysis below.
+
+1. Search for hardcoded keys/secrets in source / `strings` output
+2. Check `AndroidManifest.xml` for exported Activities/Services/Receivers
+3. Look for certificate pinning (or lack thereof) in network config
+4. Check local storage for sensitive data stored unencrypted (SharedPreferences, Keychain misuse)
+5. Identify the API backend → apply the [API quick checks](../api/README.md)
+
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Hardcoded secrets in mobile source**
+```bash
+rg -n -i "api[_-]?key|secret|password|token|http://" .
+```
+- **SKIP if:** path contains `/test/`, value is a placeholder
+- **FINDING if not skipped:** Type: Hardcoded Secret in Mobile App | Severity: High | Fix: Move secrets server-side; mobile apps cannot hold secrets safely
+
+**STEP 2 — Exported Android components**
+```bash
+rg -n "android:exported=\"true\"" .
+```
+- **SKIP if:** the component is an intended entry point (launcher activity, documented receiver)
+- **FINDING if not skipped:** Type: Exported Component | Severity: Medium | Fix: Set android:exported="false" unless the component must be externally accessible
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## OWASP MASVS control groups (what to verify)
 
 | MASVS group | Focus |

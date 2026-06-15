@@ -7,6 +7,47 @@ the two.** CWE-89, CWE-78, CWE-94, CWE-90, CWE-643, CWE-1336, CWE-611.
 
 > XSS is injection into the browser; it has its own leaf — [xss.md](xss.md).
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — SQL string concatenation**
+```bash
+rg -n "execute\(f\"|execute\(.*\+|\"SELECT .*\+|\.raw\(.*\+|format\(.*SELECT|f\".*SELECT" .
+```
+- **SKIP if:** path contains `/test/`, `/mock/`, `__tests__/`, `fixtures/`, `docs/`
+- **SKIP if:** the line uses parameterized placeholders (`?`, `%s`, `$1`, `:param`)
+- **FINDING if not skipped:** Type: SQL Injection | Severity: High | Fix: Use parameterized queries
+
+**STEP 2 — Command injection**
+```bash
+rg -n "os\.system\(|subprocess\.call\(.*shell=True|exec\(.*req\.|child_process\.exec\(" .
+```
+- **SKIP if:** path contains `/test/` or the argument is a static string literal (no variable)
+- **SKIP if:** uses `execFile` or `subprocess.run` with a list (no shell)
+- **FINDING if not skipped:** Type: Command Injection | Severity: Critical | Fix: Use exec with arg array, no shell
+
+**STEP 3 — Template injection / eval**
+```bash
+rg -n "Template\(.*req|render_template_string\(.*req|eval\(.*req|new Function\(.*req" .
+```
+- **SKIP if:** path contains `/test/` or user input is passed as template variable, not template source
+- **FINDING if not skipped:** Type: SSTI / Code Injection | Severity: Critical | Fix: Never pass user input as template source
+
+**STEP 4 — XXE (XML external entities)**
+```bash
+rg -n "DocumentBuilder|etree\.parse|XMLReader|SAXParser|libxml|xml\.dom|parseString" .
+```
+- **SKIP if:** DTDs/external entities are explicitly disabled in the same file
+- **FINDING if not skipped:** Type: XXE | Severity: High | Fix: Disable DTDs and external entity resolution in the XML parser
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Find the entry→sink pairs first
 
 Injection only exists where **input** reaches a **sink**. Enumerate both:

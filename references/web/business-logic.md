@@ -6,6 +6,31 @@ understanding what the app is *for*, then asking "what if I do this out of order
 too fast?" CWE-840, CWE-841, CWE-362 (race), CWE-770 (no limits). Also covers A10:2025 (Mishandling of
 Exceptional Conditions).
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Client-sent values in sensitive logic**
+```bash
+rg -n "req\.body\.(price|total|amount|discount|quantity|balance|role|isAdmin|userId)" .
+```
+- **SKIP if:** the value is recomputed/validated server-side from DB records
+- **FINDING if not skipped:** Type: Price/Value Tampering | Severity: High | Fix: Recompute all financial/privilege values server-side from trusted DB records
+
+**STEP 2 — Check-then-act without transaction**
+```bash
+rg -n "if.*balance|if.*stock|if.*quantity|if.*count|if.*available" .
+```
+- **SKIP if:** the check and modification are inside the same DB transaction with row lock (`FOR UPDATE`)
+- **FINDING if not skipped:** Type: Race Condition | Severity: Medium | Fix: Use DB transaction with row lock (SELECT ... FOR UPDATE) or atomic update
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## How to hunt (mindset, not a payload list)
 
 1. **Model the intended flow** for each valuable feature (checkout, signup, transfer, redeem, vote,

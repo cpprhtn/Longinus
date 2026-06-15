@@ -55,17 +55,18 @@ is the *only* file you need to open for that signal.)
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
 
 Don't see your exact signal? Three fallbacks: (1) the **principle-driven** entry —
-[attacker-mindset.md](attacker-mindset.md) reasons from *how the system must break* rather than a
-symptom; (2) the target→branch table in [SKILL.md](../SKILL.md); (3) scan the tree below and open the
-matching branch README (each one is itself just a routing table to its leaves).
+the six generative principles in [pattern-triggers.md](pattern-triggers.md) reason from *how the
+system must break* rather than a symptom; (2) the target→branch table in [SKILL.md](../SKILL.md);
+(3) scan the tree below and open the matching branch README (each one is itself just a routing table
+to its leaves).
 
 ```
 Longinus
 │
 ├── ⛓️  SPINE (governance & lens — always applies)
 │   ├── authorization-and-scope.md ....... ⛔ authorization gate, rules of engagement, legal/ethics
-│   ├── attacker-mindset.md .............. 🧠 the 6 generative principles — *how bug classes are derived*
-│   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup table (for code audits)
+│   ├── attacker-mindset.md .............. 🧠 → merged into pattern-triggers.md (redirect stub)
+│   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup + 6 generative principles
 │   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report
 │   ├── chaining-and-impact.md ........... 🔗 compose findings across trust boundaries → real impact
@@ -138,17 +139,7 @@ Longinus
 
 ---
 
-## How to pick a path
-
-| If the target is… | Start with | Then likely |
-|---|---|---|
-| **My own repo / app (pre-launch audit)** | `secrets-and-supply-chain/` | `web/access-control`, `identity/`, `web/injection`, `web/misconfiguration`, `ai-llm/` if it uses an LLM |
-| **A web app / API (authorized)** | `recon/` → `web/README` | `api/`, `identity/`, the specific `web/` leaves |
-| **An LLM / agent / RAG product** | `ai-llm/README` | `web/`, `secrets-and-supply-chain/` |
-| **A mobile app** | `mobile/` | `api/`, `identity/` |
-| **A native binary / firmware** | `reverse-engineering/` | `binary-exploitation/` |
-| **A cloud account / IaC** | `cloud-and-infra/README` | `secrets-and-supply-chain/` |
-| **A CTF challenge** | the matching specialist branch | `tooling/` |
+For target-type routing, see the fast routing table in [SKILL.md](../SKILL.md).
 
 ## Framework cross-reference (where each standard lives)
 

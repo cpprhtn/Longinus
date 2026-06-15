@@ -5,6 +5,31 @@ browsing, executing code, spending money, orchestrating other agents — prompt 
 *action* injection. This leaf covers **Excessive Agency (LLM06)**, **Vector & Embedding Weaknesses
 (LLM08)**, and **Unbounded Consumption (LLM10)**, plus MCP and multi-agent chains.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Tool/function callable without argument validation**
+```bash
+rg -n "tool_call|function_call|tools.*\[|@tool|register_tool|add_tool" .
+```
+- **SKIP if:** tool arguments are validated/allowlisted deterministically before execution
+- **FINDING if not skipped:** Type: Excessive Agency (LLM06) | Severity: High | Fix: Validate all tool arguments against an allowlist before execution
+
+**STEP 2 — RAG/vector query without tenant filter**
+```bash
+rg -n "similarity_search|\.query\(|\.search\(|vector.*search|embedding.*search" .
+```
+- **SKIP if:** tenant/user filter is enforced at query time (namespace isolation, WHERE clause)
+- **FINDING if not skipped:** Type: Cross-Tenant Data Leakage (LLM08) | Severity: High | Fix: Enforce tenant/user filter on every vector store query
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Excessive Agency (LLM06) — the core agentic risk
 
 Three knobs, each a finding when set too high:

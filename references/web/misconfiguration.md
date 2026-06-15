@@ -5,6 +5,31 @@ defaults are insecure and nobody hardened them. Individually often Low; in chain
 covers **A09:2025 (Logging & Alerting Failures)** and the response/error side of **A10:2025**. CWE-16,
 CWE-1004, CWE-942, CWE-209, CWE-548, CWE-778.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Debug mode enabled**
+```bash
+rg -n "DEBUG\s*=\s*True|debug:\s*true|NODE_ENV.*development|app\.debug|EnableDetailedErrors" .
+```
+- **SKIP if:** this is in a development/test config only, not production
+- **FINDING if not skipped:** Type: Debug Mode Enabled | Severity: Medium | Fix: Disable debug mode in production configuration
+
+**STEP 2 — Permissive CORS**
+```bash
+rg -n "Access-Control-Allow-Origin.*\*|cors\(\)|allow_origins.*\*|origin.*true" .
+```
+- **SKIP if:** the endpoint serves only public, non-authenticated data
+- **FINDING if not skipped:** Type: Permissive CORS | Severity: Medium | Fix: Restrict allowed origins to specific trusted domains
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Checklist (sweep these fast)
 
 ### Exposed files & endpoints

@@ -5,6 +5,39 @@ Infrastructure-as-code and containers let one bad default replicate everywhere. 
 baking in secrets. Most of this is catchable **statically, read-only** — the best kind of finding for a
 vibe-coded deploy. CWE-250, CWE-269, CWE-732, CWE-16.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Container running as root**
+```bash
+rg -n "USER root|^FROM.*" --glob "Dockerfile*" .
+```
+- **SKIP if:** a non-root `USER` directive appears later in the same Dockerfile
+- **SKIP if:** the image is used only for build/CI, never runs in production
+- **FINDING if not skipped:** Type: Container Running as Root | Severity: Medium | Fix: Add a non-root USER directive in the Dockerfile
+
+**STEP 2 — Unpinned base image**
+```bash
+rg -n "FROM.*:latest|FROM.*[^@]$" --glob "Dockerfile*" .
+```
+- **SKIP if:** pinned by `@sha256:...` digest
+- **FINDING if not skipped:** Type: Unpinned Base Image (Supply Chain) | Severity: Low | Fix: Pin base image to a specific digest (@sha256:...)
+
+**STEP 3 — Privileged container / host access**
+```bash
+rg -n "privileged.*true|hostPath|hostNetwork.*true|hostPID.*true" .
+```
+- **SKIP if:** documented justification with strong compensating controls exists
+- **FINDING if not skipped:** Type: Container Escape Risk | Severity: High | Fix: Remove privileged mode; use specific capabilities instead
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Infrastructure as Code (Terraform / CloudFormation / ARM / Pulumi)
 
 **Scan first:**

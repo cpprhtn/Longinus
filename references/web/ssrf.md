@@ -5,6 +5,25 @@ from inside the target's network, it reaches things you can't: cloud metadata en
 admin panels, databases, and the loopback interface — frequently chaining into **cloud credential
 theft and full account takeover.** OWASP folded SSRF into A01 (Broken Access Control) in 2025. CWE-918.
 
+## Mechanical scan
+
+> **Quick mode only.** Run these greps, apply skip conditions, report matches.
+> No further analysis needed in quick mode.
+
+**STEP 1 — Server-side URL fetch with user input**
+```bash
+rg -n "fetch\(.*req\.|requests\.(get|post)\(.*req\.|http\.(get|request)\(.*req\.|urllib\.request|curl_exec|file_get_contents\(.*\$" .
+```
+- **SKIP if:** URL is validated against a strict protocol+host allowlist (not just blocklist)
+- **SKIP if:** path contains `/test/`
+- **FINDING if not skipped:** Type: SSRF | Severity: High | Fix: Validate URL against a strict protocol+host allowlist; block internal ranges
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## Where it hides
 
 Any feature where the server fetches a URL/host you influence:
