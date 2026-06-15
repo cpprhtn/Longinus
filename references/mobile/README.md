@@ -13,7 +13,7 @@ trusts the client. Maps to **OWASP MASVS / MASTG** (the mobile equivalent of ASV
 > **[HackTricks Mobile](https://book.hacktricks.wiki/)**; the backend is usually the real prize — pivot
 > to [../api/README.md](../api/README.md).
 
-## ⏱️ First 5 minutes — Mobile quick checks
+## Mechanical scan — Mobile quick checks
 
 Run these before the deeper analysis below.
 

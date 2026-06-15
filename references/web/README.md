@@ -7,6 +7,55 @@ the **OWASP Web Security Testing Guide (WSTG)**; defensive fixes reference the *
 > ⛔ Gate first ([../authorization-and-scope.md](../authorization-and-scope.md)). For your own code,
 > static-audit freely; for live targets, stay in scope and non-destructive.
 
+## Mechanical scan
+
+> **Quick-mode consolidated web scan** (web is multi-leaf — this is the single entry point). Run these
+> greps, apply the SKIP conditions, report matches with the fixed severity. For the full per-class
+> procedure, open the leaf's own `## Mechanical scan`. Severities here are *provisional* — re-run
+> standard mode before acting (see [../audit-modes.md](../audit-modes.md)).
+
+**STEP 1 — SQL / command / template injection** → [injection.md](injection.md)
+```bash
+rg -n "execute\(f\"|execute\(.*\+|\"SELECT .*\+|\.raw\(.*\+|os\.system\(|subprocess.*shell=True|child_process\.exec\(|render_template_string\(.*req|eval\(.*req" .
+```
+- **SKIP:** `/test/`·`/mock/`·`fixtures/`; parameterized (`?`/`%s`/`$1`); `execFile`/arg-array (no shell)
+- **FINDING:** Injection · **Critical** (cmd/SSTI) / **High** (SQLi)
+
+**STEP 2 — XSS (output not escaped)** → [xss.md](xss.md)
+```bash
+rg -n "innerHTML\s*=|dangerouslySetInnerHTML|v-html|\| ?safe|mark_safe|Markup\(|document\.write\(" .
+```
+- **SKIP:** framework auto-escapes (React JSX) with no `dangerouslySetInnerHTML`; sanitized (DOMPurify/Bleach) first
+- **FINDING:** XSS · **High** (stored) / **Medium** (reflected)
+
+**STEP 3 — Broken access control / IDOR** → [access-control.md](access-control.md)
+```bash
+rg -n "findById\(req|\.get\(pk=|where.*id.*req\.params|Model\.find.*req\." .
+```
+- **SKIP:** ownership-scoped query (`AND user_id = ?`) or middleware enforces ownership before handler
+- **FINDING:** IDOR/BOLA · **High**
+
+**STEP 4 — SSRF (server fetches a URL)** → [ssrf.md](ssrf.md)
+```bash
+rg -n "requests\.get\(.*req|fetch\(.*req\.body|axios\.(get|post)\(.*req|http\.get\(.*param|urllib.*req" .
+```
+- **SKIP:** URL validated against a strict protocol+host **allowlist** (not a blocklist)
+- **FINDING:** SSRF · **High**
+
+**STEP 5 — Unsafe deserialization / missing auth / CSRF** → [deserialization.md](deserialization.md) · [auth-and-session.md](auth-and-session.md) · [csrf.md](csrf.md)
+```bash
+rg -n "pickle\.loads?\(|yaml\.load\(|unserialize\(|ObjectInputStream" .
+rg -n "router\.|app\.(get|post|put|delete)" . | rg -vi "auth|login_required|guard|middleware|isauthenticated"
+```
+- **SKIP:** deser input from a trusted source the attacker can't control / `yaml.safe_load`; route genuinely public (health check); API uses a non-cookie Bearer header (CSRF n/a)
+- **FINDING:** Deserialization · **Critical** | Missing auth · **High** | CSRF · **Medium**
+
+**Output template (quick mode):**
+```
+| File:Line | Type | Severity | Pattern | Fix |
+|---|---|---|---|---|
+```
+
 ## OWASP Top 10:2025 → Longinus leaves
 
 | 2025 | Category | Where to test it |

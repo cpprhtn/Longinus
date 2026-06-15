@@ -53,6 +53,7 @@ is the *only* file you need to open for that signal.)
 | Need to find the attack surface first (subdomains, endpoints, OSINT) | [recon/README.md](recon/README.md) |
 | Got a low/medium — *what does it unlock?* how do I escalate across a boundary? | [chaining-and-impact.md](chaining-and-impact.md) |
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
+| Picking audit depth (quick/standard/deep), first-contact profiling, dependency/SCA check | [audit-modes.md](audit-modes.md) |
 
 Don't see your exact signal? Three fallbacks: (1) the **principle-driven** entry —
 the six generative principles in [pattern-triggers.md](pattern-triggers.md) reason from *how the
@@ -69,6 +70,7 @@ Longinus
 │   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup + 6 generative principles
 │   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report
+│   ├── audit-modes.md ................... 🎚️ quick/standard/deep modes, first-contact profiling, SCA check
 │   ├── chaining-and-impact.md ........... 🔗 compose findings across trust boundaries → real impact
 │   ├── severity-and-triage.md ........... CVSS 4.0, de-dup, false-positive control, prioritization
 │   └── reporting-and-disclosure.md ...... report + PoC templates, responsible disclosure

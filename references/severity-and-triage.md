@@ -115,6 +115,12 @@ validation" bucket, rule out these specific traps:
 When unsure, **park it** — a precise "needs validation" note is more valuable than an inflated finding.
 This is the crown-jewel discipline that makes the output trustworthy.
 
+> **Canonical source.** This table is the single source of truth for false-positive / "DO NOT report"
+> discipline. The local restatements in [pattern-triggers.md](pattern-triggers.md) (audit-time guards),
+> [limitations.md](limitations.md) (what static analysis can't reach), and [SKILL.md](../SKILL.md)
+> (operating principles) intentionally repeat it for weaker models — **keep them in sync with this
+> table; if they ever disagree, this one wins.**
+
 ## Prioritize the fix list
 
 Order by `severity` then `effort` (quick critical wins first), and flag:

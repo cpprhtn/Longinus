@@ -9,7 +9,7 @@ web sinks see [../web/README.md](../web/README.md).
 > ⛔ Gate first. APIs make bulk-extraction trivially easy — be extra careful to stay non-destructive
 > and not exfiltrate real data; a 2–3 record proof suffices.
 
-## ⏱️ First 5 minutes — API quick checks
+## Mechanical scan — API quick checks
 
 Run these before the deeper analysis below.
 

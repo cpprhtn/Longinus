@@ -92,7 +92,8 @@ endpoints with no auth middleware — is each one genuinely public?
 ## ⛔ DO NOT report as a vulnerability if...
 
 Before filing a finding, verify the pattern is actually exploitable. These guards
-prevent the most common false positives:
+prevent the most common false positives. (Canonical FP discipline:
+[severity-and-triage.md](severity-and-triage.md) "LLM-auditor failure modes" — these mirror it.)
 
 1. **The input is already validated/parameterized upstream** — a parameterized query
    (`db.execute("... WHERE id = ?", (id,))`) is not SQLi even though it uses user input.

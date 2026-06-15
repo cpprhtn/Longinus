@@ -58,44 +58,16 @@ prove a bug with a canary/benign OOB callback, don't exfiltrate or pivot. Full r
 
 ## 🎚️ Audit mode (select before routing)
 
-Three modes control depth and token budget. Default is **standard** unless the user
-specifies otherwise (e.g., "run a quick security audit" or "deep audit this repo").
+Pick depth up front (default **standard**):
 
-| Mode | When to use | What to read | What to skip |
-|---|---|---|---|
-| **quick** | Fast first pass; small on-device models (11B); CI gate checks | SKILL.md (this file) → route → `## Mechanical scan` section at the top of each relevant leaf. ONE leaf per domain. | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring. Use fixed severities from the mechanical scan. |
-| **standard** | Default. Full audit for one target. | SKILL.md → route → leaf (full) → spine docs as needed. | Domains not relevant to this target. |
-| **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS: chaining-and-impact.md, all relevant domain quick-checks, cross-domain pivot analysis. | Nothing — full coverage. |
+| Mode | When | What it does |
+|---|---|---|
+| **quick** | fast pass / small models / CI gate | each leaf's `## Mechanical scan` only — fixed severities, no CVSS/chaining (*provisional — re-run standard before acting*) |
+| **standard** | default, one target | profile → leaf (full) → PoC → triage → report |
+| **deep** | formal multi-domain audit | standard + [chaining-and-impact](references/chaining-and-impact.md) + cross-domain pivots |
 
-### Quick mode instructions
-
-In quick mode, follow this exact procedure:
-1. Pass the authorization gate (above).
-2. Identify the stack (Step 1 below).
-3. Run the dependency health check (Step 1.5 below).
-4. Route to the matching domain leaf.
-5. In each leaf, read ONLY the `## Mechanical scan` section at the top.
-6. Execute each numbered STEP (grep command), apply the SKIP conditions, report
-   any remaining matches as findings using the fixed severity and the fill-in
-   output template.
-7. Do NOT perform CVSS scoring, chaining analysis, or principle-driven reasoning.
-8. Report using a simplified format: one table of findings with columns
-   `[File:Line | Type | Severity (fixed) | Pattern matched | Fix]`.
-
-### Standard mode instructions
-
-Default behavior. Profile → route → leaf (full) → PoC → triage → report.
-See "The loop" section below.
-
-### Deep mode instructions
-
-1. Run standard mode for the primary domain.
-2. Then sweep ALL secondary domains (run each domain's quick checks from its README).
-3. Open [chaining-and-impact.md](references/chaining-and-impact.md) and systematically
-   test cross-domain pivots (e.g., web→cloud, app→infra, model→sink).
-4. Run the full severity gates with business-impact overrides.
-5. Produce a comprehensive report per
-   [reporting-and-disclosure.md](references/reporting-and-disclosure.md).
+**Full mode procedures, the first-contact profiling sequence, and the dependency (SCA) check live in
+[references/audit-modes.md](references/audit-modes.md)** — open it when you actually start an audit.
 
 ---
 
@@ -141,96 +113,12 @@ Full detail (only if you need it): [references/methodology.md](references/method
 
 ---
 
-## 🔬 First-contact profiling (when you don't know where to start)
+## 🔬 Starting an audit?
 
-When you encounter code or a target for the first time and aren't sure which leaf to
-open, execute these steps **mechanically, in order**. Do not skip steps.
-
-### Step 1 — Identify the stack (look for these files)
-
-| File / pattern | Stack |
-|---|---|
-| `package.json` / `node_modules` | Node.js / JavaScript/TypeScript |
-| `requirements.txt` / `pyproject.toml` / `Pipfile` / `setup.py` | Python |
-| `go.mod` / `go.sum` | Go |
-| `Cargo.toml` | Rust |
-| `pom.xml` / `build.gradle` | Java / Kotlin |
-| `Gemfile` / `config/routes.rb` | Ruby / Rails |
-| `Dockerfile` / `docker-compose.yml` | Containerized |
-| `*.tf` / `terraform/` | IaC (Terraform) |
-| `.env` / `config/` with secrets | **Check for secrets immediately** |
-
-### Step 1.5 — Dependency health check (after stack, before form factor)
-
-Run the appropriate SCA tool for the stack identified in Step 1:
-
-| Stack | Command |
-|---|---|
-| Node.js | `npm audit --omit=dev` |
-| Python | `pip-audit` or `osv-scanner -r .` |
-| Go | `govulncheck ./...` |
-| Rust | `cargo audit` |
-| Ruby | `bundler-audit` |
-| Java / Kotlin | `mvn dependency-check:check` or `trivy fs .` |
-| Multi-ecosystem | `trivy fs .` or `osv-scanner -r .` |
-
-**Severity rule (mandatory — aligns with the severity gates):**
-- CVE with **confirmed reachable code path** in the app → severity per normal triage
-- CVE with **no confirmed reachability** → **Info / "patch anyway"** only; do NOT rate
-  as High/Critical (see [severity-and-triage.md](references/severity-and-triage.md))
-- Hallucinated CVE (cannot verify it exists) → **DO NOT report**
-
-Report dependency findings in a separate **"Dependency Health"** section of the report,
-distinct from application-level findings. Full SCA playbook:
-[secrets-and-supply-chain/dependency-supply-chain.md](references/secrets-and-supply-chain/dependency-supply-chain.md).
-
-### Step 2 — Identify the form factor (what does it do?)
-
-| Signal | Form factor | Jump to |
-|---|---|---|
-| HTTP routes/controllers/handlers | **Web app** | `web/` branch |
-| GraphQL schema / REST endpoints without UI | **API** | `api/` branch |
-| `openai` / `anthropic` / `langchain` / model loading code | **AI/LLM app** | `ai-llm/` branch |
-| `*.tf` / `*.yaml` (k8s) / `Dockerfile` only | **Cloud/IaC** | `cloud-and-infra/` branch |
-| `AndroidManifest.xml` / `*.xcodeproj` / `*.swift` / `*.kt` | **Mobile** | `mobile/` branch |
-
-### Step 3 — Map entry points (run these greps, adapt to language)
-
-```bash
-# Routes / endpoints (where untrusted input enters)
-rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .
-rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .
-
-# Sinks (where input becomes dangerous)
-rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .
-
-# Auth patterns (or lack thereof)
-rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .
-
-# Secrets (immediate high-confidence findings)
-rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .
-```
-
-### Step 4 — Route to the correct leaf
-
-Based on steps 1–3, jump to the matching row in the fast routing table above. If multiple
-domains apply (e.g., a web app that also uses an LLM), prioritize in this order:
-1. `secrets-and-supply-chain/` (always first — 60-second triage)
-2. Primary domain (web / api / ai-llm / cloud / mobile)
-3. Secondary domains
-
-### Step 5 — For source-code audits, also use the pattern trigger table
-
-Open [references/pattern-triggers.md](references/pattern-triggers.md) — it maps code
-patterns directly to vulnerability checks. Scan for the patterns; each match tells you
-exactly which leaf to open and what to confirm.
-
----
-
-## ⏱️ Domain quick checks
-
-Each domain README has a **"first 5 minutes"** checklist. After routing to a domain,
-run its quick checks before going deeper into leaves.
+First-contact **profiling** (stack → **dependency/SCA check** → form factor → entry-point greps →
+route), the three **mode procedures**, and the per-domain `Mechanical scan` quick-checks all live in
+**[references/audit-modes.md](references/audit-modes.md)**. For source audits, the code-pattern → vuln
+lookup is **[references/pattern-triggers.md](references/pattern-triggers.md)**.
 
 ---
 

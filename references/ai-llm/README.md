@@ -13,7 +13,7 @@ red-team an AI feature. References: OWASP GenAI/LLM Top 10:2025, MITRE ATLAS, NI
 > [../web/](../web/README.md) and [../secrets-and-supply-chain/](../secrets-and-supply-chain/README.md)
 > too. The model's output is just another untrusted input to the rest of your system.
 
-## ⏱️ First 5 minutes — AI/LLM quick checks
+## Mechanical scan — AI/LLM quick checks
 
 Run these before descending into the leaves below.
 

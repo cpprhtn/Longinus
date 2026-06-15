@@ -49,6 +49,10 @@ analysis, not a skill defect.
 
 ## DO NOT report as a finding
 
+> Mirrors the canonical [severity-and-triage.md](severity-and-triage.md) "LLM-auditor failure modes" —
+> keep in sync.
+
+
 - Code in **test files, mocks, fixtures, or documentation examples** — not production
 - **Dead code** — unreachable, behind a permanent-off feature flag, or in deleted/commented blocks
 - Patterns protected by **framework defaults** (React auto-escaping, Django ORM

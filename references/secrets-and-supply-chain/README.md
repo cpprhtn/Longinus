@@ -22,7 +22,7 @@ Why AI code is especially exposed:
 | [secret-detection.md](secret-detection.md) | hard-coded keys/tokens/passwords, git history, env/CI/log leakage, validation, rotation |
 | [dependency-supply-chain.md](dependency-supply-chain.md) | known-CVE deps (SCA), slopsquatting/typosquatting, lockfiles, integrity, SBOM, SLSA, CI/CD & build security |
 
-## 60-second triage for any repo
+## Mechanical scan (60-second triage)
 
 ```bash
 # 1) secrets in the working tree

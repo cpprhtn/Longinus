@@ -32,7 +32,10 @@ For a **source-code audit** (your own repo), recon means building the surface fr
 - **Trust map:** which routes are unauthenticated, which require which role, where authZ is enforced
   (and where it's *assumed*).
 
-Fast starting greps (tune per language):
+## Mechanical scan
+
+For a source audit, run these (tune per language); apply the same SKIP/severity discipline as the
+domain leaves, then route each hit to its leaf:
 ```bash
 # dangerous sinks
 rg -n "exec\(|child_process|os\.system|subprocess|Runtime\.exec|eval\(|new Function" .
