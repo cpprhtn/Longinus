@@ -1,5 +1,10 @@
 # 🛡️ Enforce-forward — kill the bug class, gate the regression
 
+> **This is the *defender lens* of a two-lens method.** Offense drives — you reach this doc *because* an
+> attack ([pattern-triggers.md](pattern-triggers.md)) reached a sink and a control was missing or
+> bypassable ([chaining-and-impact.md](chaining-and-impact.md)). Enforcement is how you *seal* what the
+> attack exposed; it is not a checklist run on its own.
+
 A finding does **not** end at a one-line patch. It ends at **(1)** the *structural control* that makes
 the whole class impossible, and **(2)** the *enforcement gate* that keeps it that way. The deliverable
 shifts from *"found N instances of X"* to *"the codebase lacks control C; here is the layer that adds

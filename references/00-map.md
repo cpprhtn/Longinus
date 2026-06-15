@@ -53,6 +53,7 @@ is the *only* file you need to open for that signal.)
 | A PCAP / memory dump / disk image / stego / log to analyze | [forensics/README.md](forensics/README.md) |
 | Need to find the attack surface first (subdomains, endpoints, OSINT) | [recon/README.md](recon/README.md) |
 | Got a low/medium — *what does it unlock?* how do I escalate across a boundary? | [chaining-and-impact.md](chaining-and-impact.md) |
+| Build a specific impact chain — ATO · cloud takeover · RCE · mass exfil · AI-agent | [chaining-and-impact.md](chaining-and-impact.md) → [chaining/](chaining/account-takeover.md) |
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
 | Picking audit depth (quick/standard/deep), first-contact profiling, dependency/SCA check | [audit-modes.md](audit-modes.md) |
 | Don't just fix it — *enforce* it (structural control + CI gate per category) | [enforce-forward.md](enforce-forward.md) |
@@ -74,6 +75,8 @@ Longinus
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report
 │   ├── audit-modes.md ................... 🎚️ quick/standard/deep modes, first-contact profiling, SCA check
 │   ├── chaining-and-impact.md ........... 🔗 compose findings across trust boundaries → real impact
+│   │   └── chaining/ ................... deep playbooks: account-takeover · cloud-takeover · rce · data-exfiltration · ai-agent
+│   │       (each: step-by-step real-world chain + 🛡️ defensive seal)
 │   ├── severity-and-triage.md ........... CVSS 4.0, de-dup, false-positive control, prioritization
 │   ├── enforce-forward.md ............... 🛡️ kill the bug class + gate the regression (per-category controls + templates/)
 │   └── reporting-and-disclosure.md ...... report + PoC templates, responsible disclosure

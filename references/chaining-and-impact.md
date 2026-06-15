@@ -48,6 +48,21 @@ These are the patterns that recur in real disclosures and CTF finals. Use them a
 | known-CVE / hallucinated dependency reachable | **RCE / supply-chain foothold** | [secrets/dependency-supply-chain](secrets-and-supply-chain/dependency-supply-chain.md) |
 | **indirect prompt injection + a tool/agent + an exfil channel** = the *lethal trifecta* | data theft / action injection / tool-arg → web sink (SSRF/SQLi/RCE) | [ai-llm/prompt-injection](ai-llm/prompt-injection.md) · [ai-llm/agentic-and-mcp](ai-llm/agentic-and-mcp.md) |
 
+## Deep chain playbooks (the catalog)
+
+The table above is the index; each family below is a **step-by-step, real-world playbook** — the ordered
+moves, the trust boundaries crossed, disclosed cases, and the **🛡️ defensive seal** (which
+[enforce-forward.md](enforce-forward.md) gate breaks the chain — the two-lens close):
+
+- [chaining/account-takeover.md](chaining/account-takeover.md) — ATO: OAuth/`redirect_uri`, self-XSS+CSRF, reset/enumeration, subdomain takeover
+- [chaining/cloud-takeover.md](chaining/cloud-takeover.md) — SSRF→IMDS→IAM→account; app-RCE→container escape→cluster; CI/OIDC→cloud
+- [chaining/rce-chains.md](chaining/rce-chains.md) — upload→webshell, SQLi→file/`xp_cmdshell`, deserialization, prototype-pollution→gadget, dependency CVE
+- [chaining/data-exfiltration.md](chaining/data-exfiltration.md) — IDOR/BOLA+sequential+no-rate-limit→full dump; GraphQL batching; blind exfil
+- [chaining/ai-agent-chains.md](chaining/ai-agent-chains.md) — the lethal trifecta, RAG poisoning, model-supply-chain→RCE, MCP cross-tool
+
+> Each playbook is **offense-driven, defense-sealed** — it ends by naming the single gate that would have
+> broken the chain, so the report carries both the attack *and* its fix.
+
 ## Cross-domain pivots (where the big numbers come from)
 
 - **web → cloud:** SSRF/RCE on an instance → metadata creds → IAM → other services & tenants.
@@ -81,9 +96,10 @@ the authorization context differs — so practice the escalation reflex here.
 
 ## References
 
-Chaining is the operational expression of the [attacker-mindset](attacker-mindset.md) lenses and the
-**Chain** step of [methodology.md](methodology.md); scoring lives in
-[severity-and-triage.md](severity-and-triage.md). Real disclosed chains are catalogued via the
-per-leaf "Real-world cases" footers and [research/process.md](../research/process.md).
+Chaining is the operational expression of the [pattern-triggers.md](pattern-triggers.md) attacker lenses
+and the **Chain** step of [methodology.md](methodology.md); scoring lives in
+[severity-and-triage.md](severity-and-triage.md); the defensive seal of each chain lives in
+[enforce-forward.md](enforce-forward.md). Real disclosed chains are catalogued in the
+[chaining/](chaining/account-takeover.md) playbooks and the per-leaf "Real-world cases" footers.
 
 Back to the [tree](00-map.md).

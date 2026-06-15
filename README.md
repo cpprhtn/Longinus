@@ -176,6 +176,16 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.2.2
+
+- **Chain catalog** — `chaining-and-impact.md` is now a hub indexing deep, step-by-step real-world
+  attack-chain playbooks under `references/chaining/` (account-takeover, cloud-takeover, rce-chains,
+  data-exfiltration, ai-agent-chains). Each is **offense-driven** and ends with a 🛡️ *defensive seal* —
+  the single gate that breaks the chain.
+- **Bidirectional method** — new operating principle *"Two lenses, one flaw"*: hunt with the attacker
+  lens (where it breaks) **and** the defender lens (what control must be there); **offense drives,
+  defense seals**. `enforce-forward.md` reframed as the defender lens of that method.
+
 ### v0.2.1
 
 - **Enforce-forward** — findings now end in a *structural control + CI/lint gate*, not just a patch.

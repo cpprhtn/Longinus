@@ -166,6 +166,14 @@ Longinus/
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.2.2
+
+- **체인 카탈로그** — `chaining-and-impact.md`를 허브로 승격, `references/chaining/` 아래 단계별 실전
+  공격 체인 playbook(account-takeover, cloud-takeover, rce-chains, data-exfiltration, ai-agent-chains)을
+  색인. 각 playbook은 **공격 주도(offense-driven)** 이며 🛡️ *defensive seal*(체인을 끊는 단 하나의 게이트)로 끝남.
+- **양방향 방법론** — 신규 운영원리 *"두 렌즈, 하나의 결함"*: 공격 렌즈(어디서 터지나)와 방어 렌즈(어떤
+  통제가 있어야 하나)로 동시에 사냥, **공격이 driver·방어가 seal**. `enforce-forward.md`를 이 방법론의 방어 렌즈로 재배치.
+
 ### v0.2.1
 
 - **Enforce-forward** — 발견이 단순 패치가 아니라 *구조적 통제 + CI/lint 게이트*로 끝나도록. 신규

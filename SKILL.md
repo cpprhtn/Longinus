@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill: it profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.
-version: 0.2.1
+version: 0.2.2
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -127,6 +127,10 @@ lookup is **[references/pattern-triggers.md](references/pattern-triggers.md)**.
 
 - **Prove it or park it** — reproducible PoC or it's unconfirmed. *This is the crown jewel:* an LLM's
   failure mode is confident hallucinated bugs, so low false positives are what earn trust.
+- **Two lenses, one flaw** — hunt with the *attacker lens* (where it breaks —
+  [pattern-triggers.md](references/pattern-triggers.md)) **and** the *defender lens* (what control must
+  be there — [enforce-forward.md](references/enforce-forward.md)); the flaw is the gap between them.
+  **Offense drives, defense seals.**
 - **Think in principles, report in chains** — derive bugs from the six generative principles
   ([pattern-triggers.md](references/pattern-triggers.md)); rate them by *chained* impact
   ([chaining-and-impact.md](references/chaining-and-impact.md)), never in isolation.
