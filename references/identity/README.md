@@ -77,6 +77,95 @@ parameter:
 - **Fix:** enforce MFA server-side on all auth paths, rate-limit + lock OTP attempts, single-use
   time-bound codes bound to the session, re-auth before MFA changes.
 
+## DO NOT report as an identity vulnerability if…
+
+- The JWT `decode` without verification is in **logging/debugging code** that never
+  trusts the claims for authorization decisions
+- The `redirect_uri` uses a **strict exact-match allowlist** you missed (check config,
+  not just the comparison function)
+- The "missing state" flow is **client-credentials** (machine-to-machine, no browser) —
+  state is a browser-CSRF defense, not applicable to backend flows
+- The "MFA bypass" requires **already having the password** and targets a user's own
+  non-sensitive settings — assess actual impact before reporting
+- The JWT has a short TTL and the app **uses refresh-token rotation** — "no revocation"
+  with a 5-minute access token and rotated refresh is acceptable
+
+---
+
+## Vulnerable ↔ fixed code examples
+
+### JWT alg:none bypass
+
+```python
+# ❌ VULNERABLE — accepts whatever algorithm the token claims (including none)
+import jwt
+def verify_token(token):
+    payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256", "HS256", "none"])
+    return payload   # attacker strips signature, sets alg:"none" → forged identity
+
+# ✅ FIXED — pin to the one expected algorithm
+import jwt
+def verify_token(token):
+    payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])  # only RS256 accepted
+    return payload
+```
+
+### JWT RS256 → HS256 confusion
+
+```javascript
+// ❌ VULNERABLE — library picks algorithm from token header; accepts both
+const decoded = jwt.verify(token, publicKey);
+// attacker: signs token with HMAC using the *public key* as secret → verified!
+
+// ✅ FIXED — explicitly pin the algorithm
+const decoded = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+```
+
+### OAuth redirect_uri bypass
+
+```python
+# ❌ VULNERABLE — partial match allows attacker subdomains/paths
+def validate_redirect(uri):
+    return uri.startswith('https://app.example.com')
+    # bypassed by: https://app.example.com.evil.com/steal
+    # bypassed by: https://app.example.com@evil.com
+    # bypassed by: https://app.example.com/../attacker-path
+
+# ✅ FIXED — exact match against allowlist
+ALLOWED_REDIRECTS = {
+    'https://app.example.com/callback',
+    'https://app.example.com/oauth/done'
+}
+def validate_redirect(uri):
+    return uri in ALLOWED_REDIRECTS
+```
+
+### Missing state parameter (OAuth CSRF)
+
+```javascript
+// ❌ VULNERABLE — no state parameter → attacker can force-login victim to attacker's account
+app.get('/auth/callback', async (req, res) => {
+  const { code } = req.query;          // no state validation
+  const token = await exchangeCode(code);
+  loginUser(token);                     // attacker's code → victim logged into attacker's account
+});
+
+// ✅ FIXED — generate, store, and verify state
+app.get('/auth/start', (req, res) => {
+  const state = crypto.randomUUID();
+  req.session.oauthState = state;
+  res.redirect(`https://provider/authorize?...&state=${state}`);
+});
+app.get('/auth/callback', async (req, res) => {
+  if (req.query.state !== req.session.oauthState) return res.sendStatus(403);
+  delete req.session.oauthState;
+  const token = await exchangeCode(req.query.code);
+  loginUser(token);
+});
+```
+
+---
+
 ## Static signs
 
 ```bash

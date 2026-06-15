@@ -32,6 +32,25 @@ rg -n "torch\.load|pickle\.loads?|joblib\.load|load_model|allow_pickle\s*=\s*Tru
 # flag any whose source is a downloaded/3rd-party/user-supplied artifact, and any unpinned model ref
 ```
 
+## Vulnerable ↔ fixed application code
+
+```python
+# ❌ VULNERABLE — loads user-uploaded model with pickle (RCE on load)
+@app.route('/predict', methods=['POST'])
+def predict():
+    model_file = request.files['model']
+    model = torch.load(model_file)     # __reduce__ runs arbitrary code during unpickling
+    return jsonify(model(data).tolist())
+
+# ✅ FIXED — only load safetensors from trusted, pinned sources
+from safetensors.torch import load_file
+
+MODEL_PATH = "/app/models/verified-model.safetensors"  # pre-verified, hash-pinned
+model_weights = load_file(MODEL_PATH)                   # no code execution possible
+```
+
+---
+
 ## How to find it
 
 1. **Inventory model sources & pinning** — every model the app loads: where from, pinned to a commit/

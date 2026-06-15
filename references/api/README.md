@@ -63,6 +63,107 @@ You can't test endpoints you don't know. Build the full inventory:
   authorization is enforced in the service, not assumed at the gateway.
 - REST: watch for verb-based authZ gaps and content-type confusion.
 
+## DO NOT report as an API vulnerability if…
+
+- The BOLA candidate endpoint **scopes the query by the authenticated user** (e.g.,
+  `WHERE id = ? AND org_id = session.org`) — the ownership check is in the query itself
+- The admin function **has role middleware you didn't see** (check decorators, guards,
+  or a global route-level policy)
+- The "excessive data" is in a **response only the owning user ever receives** (a user
+  reading their own full profile is not data exposure)
+- The rate-limit "bypass" is on a **read-only public endpoint** with no abuse impact
+- You cannot demonstrate a **concrete unauthorized action** (no actual cross-account
+  access, no actual priv-esc) — a *theoretical* missing check without proof belongs in
+  "Needs Validation"
+
+---
+
+## Vulnerable ↔ fixed code examples
+
+### BOLA (the #1 API bug — Broken Object Level Authorization)
+
+```javascript
+// ❌ VULNERABLE — fetches any order by ID, no ownership check
+app.get('/api/orders/:id', authenticate, async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  res.json(order);   // user A can read user B's order by guessing/iterating IDs
+});
+
+// ✅ FIXED — ownership scoped into the query
+app.get('/api/orders/:id', authenticate, async (req, res) => {
+  const order = await Order.findOne({
+    _id: req.params.id,
+    userId: req.user.id     // only returns if caller owns it
+  });
+  if (!order) return res.sendStatus(404);  // 404 not 403 (don't leak existence)
+  res.json(order);
+});
+```
+
+### BFLA (Broken Function Level Authorization)
+
+```python
+# ❌ VULNERABLE — admin endpoint with no role check
+@app.route('/api/admin/users', methods=['DELETE'])
+@login_required
+def delete_user():
+    user_id = request.json['user_id']
+    User.query.get(user_id).delete()   # any authenticated user can delete anyone
+    db.session.commit()
+
+# ✅ FIXED — enforce admin role
+@app.route('/api/admin/users', methods=['DELETE'])
+@login_required
+@require_role('admin')                  # middleware rejects non-admins with 403
+def delete_user():
+    user_id = request.json['user_id']
+    User.query.get_or_404(user_id).delete()
+    db.session.commit()
+```
+
+### Mass assignment (API3)
+
+```javascript
+// ❌ VULNERABLE — binds entire request body to model update
+app.put('/api/profile', authenticate, async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, req.body);
+  // attacker sends {"role":"admin","verified":true} → instant priv-esc
+});
+
+// ✅ FIXED — allowlist of updatable fields
+app.put('/api/profile', authenticate, async (req, res) => {
+  const allowed = ['name', 'email', 'avatar'];
+  const updates = Object.fromEntries(
+    Object.entries(req.body).filter(([k]) => allowed.includes(k))
+  );
+  await User.findByIdAndUpdate(req.user.id, updates);
+});
+```
+
+### Excessive data exposure (API3)
+
+```python
+# ❌ VULNERABLE — returns entire user object including internal fields
+@app.route('/api/users/<int:user_id>')
+@login_required
+def get_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.to_dict())  # exposes password_hash, ssn, internal_notes
+
+# ✅ FIXED — explicit response DTO with only allowed fields
+@app.route('/api/users/<int:user_id>')
+@login_required
+def get_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'name': user.name,
+        'avatar': user.avatar_url
+    })
+```
+
+---
+
 ## Static signs (code audit)
 
 ```bash

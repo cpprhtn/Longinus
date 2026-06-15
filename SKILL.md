@@ -96,6 +96,102 @@ this table — go to the **signal → exact-file jump table at the top of
 
 Full detail (only if you need it): [references/methodology.md](references/methodology.md).
 
+---
+
+## 🔬 First-contact profiling (when you don't know where to start)
+
+When you encounter code or a target for the first time and aren't sure which leaf to
+open, execute these steps **mechanically, in order**. Do not skip steps.
+
+### Step 1 — Identify the stack (look for these files)
+
+| File / pattern | Stack |
+|---|---|
+| `package.json` / `node_modules` | Node.js / JavaScript/TypeScript |
+| `requirements.txt` / `pyproject.toml` / `Pipfile` / `setup.py` | Python |
+| `go.mod` / `go.sum` | Go |
+| `Cargo.toml` | Rust |
+| `pom.xml` / `build.gradle` | Java / Kotlin |
+| `Gemfile` / `config/routes.rb` | Ruby / Rails |
+| `Dockerfile` / `docker-compose.yml` | Containerized |
+| `*.tf` / `terraform/` | IaC (Terraform) |
+| `.env` / `config/` with secrets | **Check for secrets immediately** |
+
+### Step 2 — Identify the form factor (what does it do?)
+
+| Signal | Form factor | Jump to |
+|---|---|---|
+| HTTP routes/controllers/handlers | **Web app** | `web/` branch |
+| GraphQL schema / REST endpoints without UI | **API** | `api/` branch |
+| `openai` / `anthropic` / `langchain` / model loading code | **AI/LLM app** | `ai-llm/` branch |
+| `*.tf` / `*.yaml` (k8s) / `Dockerfile` only | **Cloud/IaC** | `cloud-and-infra/` branch |
+| `AndroidManifest.xml` / `*.xcodeproj` / `*.swift` / `*.kt` | **Mobile** | `mobile/` branch |
+
+### Step 3 — Map entry points (run these greps, adapt to language)
+
+```bash
+# Routes / endpoints (where untrusted input enters)
+rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .
+rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .
+
+# Sinks (where input becomes dangerous)
+rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .
+
+# Auth patterns (or lack thereof)
+rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .
+
+# Secrets (immediate high-confidence findings)
+rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .
+```
+
+### Step 4 — Route to the correct leaf
+
+Based on steps 1–3, jump to the matching row in the fast routing table above. If multiple
+domains apply (e.g., a web app that also uses an LLM), prioritize in this order:
+1. `secrets-and-supply-chain/` (always first — 60-second triage)
+2. Primary domain (web / api / ai-llm / cloud / mobile)
+3. Secondary domains
+
+### Step 5 — For source-code audits, also use the pattern trigger table
+
+Open [references/pattern-triggers.md](references/pattern-triggers.md) — it maps code
+patterns directly to vulnerability checks. Scan for the patterns; each match tells you
+exactly which leaf to open and what to confirm.
+
+---
+
+## ⏱️ Domain-specific "first 5 minutes" quick checks
+
+### AI / LLM app — first 5 checks
+1. Find all model loading calls → `trust_remote_code=True`? pickle-based? unpinned model refs?
+2. Enumerate all tool/function definitions → what real permissions does each have?
+3. Trace where model output goes → does it reach `innerHTML` / SQL / shell / `eval` / URL fetch?
+4. Find RAG/vector queries → is there a tenant/user filter at query time?
+5. Read the system prompt → does it contain secrets or sensitive logic?
+
+### Cloud / IaC — first 5 checks
+1. `rg "Action.*\\*|Resource.*\\*|public-read|allUsers|0\\.0\\.0\\.0/0"` → immediate red flags
+2. Check for IMDSv1 (`http_tokens = "optional"` or missing metadata block)
+3. Check Dockerfiles for `USER root` / unpinned base images / secrets in build args
+4. Check for secrets in `.tf` / `tfvars` / `docker-compose.yml` / env files
+5. Check k8s manifests for `privileged: true` / `hostPath` / `cluster-admin` binding
+
+### API-only — first 5 checks
+1. Build endpoint inventory from route definitions
+2. For each endpoint with an object ID: is ownership checked? → BOLA sweep
+3. Are admin endpoints guarded by role/permission middleware? → BFLA sweep
+4. Check response serialization: do endpoints return full model objects? → data exposure
+5. Is there rate limiting on auth endpoints (login, OTP, reset)?
+
+### Mobile app — first 5 checks
+1. Search for hardcoded keys/secrets in source / `strings` output
+2. Check `AndroidManifest.xml` for exported Activities/Services/Receivers
+3. Look for certificate pinning (or lack thereof) in network config
+4. Check local storage for sensitive data stored unencrypted (SharedPreferences, Keychain misuse)
+5. Identify the API backend → apply the API quick checks above
+
+---
+
 ## Operating principles
 
 - **Prove it or park it** — reproducible PoC or it's unconfirmed. *This is the crown jewel:* an LLM's

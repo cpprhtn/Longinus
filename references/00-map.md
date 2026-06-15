@@ -16,6 +16,11 @@ playbook: *what the weakness is · how to find it · how to confirm it · how to
 You already see something specific — go straight to the leaf, skip the branch READMEs. (Right column
 is the *only* file you need to open for that signal.)
 
+> **For source-code audits** where you're scanning code patterns rather than observing runtime
+> signals, use the [pattern-triggers.md](pattern-triggers.md) lookup table instead — it maps code
+> patterns directly to vulnerability checks with false-positive guards.
+> For honest capability limits, see [limitations.md](limitations.md).
+
 | What you're looking at / the signal | Open only this |
 |---|---|
 | `id`/UUID/filename in the URL or body; can I read *another user's* object? | [web/access-control.md](web/access-control.md) |
@@ -60,6 +65,8 @@ Longinus
 ├── ⛓️  SPINE (governance & lens — always applies)
 │   ├── authorization-and-scope.md ....... ⛔ authorization gate, rules of engagement, legal/ethics
 │   ├── attacker-mindset.md .............. 🧠 the 6 generative principles — *how bug classes are derived*
+│   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup table (for code audits)
+│   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report
 │   ├── chaining-and-impact.md ........... 🔗 compose findings across trust boundaries → real impact
 │   ├── severity-and-triage.md ........... CVSS 4.0, de-dup, false-positive control, prioritization

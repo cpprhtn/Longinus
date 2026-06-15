@@ -24,7 +24,6 @@ target needs).
 
 - **Developers & founders** auditing their own (often AI-written) code before launch.
 - **Bug-bounty hunters & pentesters** who need a repeatable methodology against authorized scope.
-- **CTF players & learners** drilling a specific category in depth.
 
 ## What makes it different
 
@@ -41,6 +40,11 @@ Not just another playbook pack:
 - **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. An LLM's
   weakest point is the confident hallucinated bug, so a low false-positive rate is what makes the
   output trustworthy → [severity & triage](references/severity-and-triage.md).
+- **Mechanical pattern lookup for code audits.** A
+  [pattern-trigger table](references/pattern-triggers.md) maps code patterns directly to
+  vulnerability checks with false-positive guards — no principle synthesis needed.
+- **Honest about its limits.** A [limitations doc](references/limitations.md) says what static/LLM
+  analysis *cannot* find, so a clean report never implies "no vulnerabilities exist."
 
 ## Install
 
@@ -106,6 +110,8 @@ Longinus/
 └── references/                     ← the domain tree (the playbooks)
     ├── 00-map.md                   ← master navigable tree + signal→file jump table
     ├── authorization-and-scope.md  attacker-mindset.md       ← ⛔ gate + 🧠 the generative lens
+    ├── pattern-triggers.md                                   ← 🎯 code pattern → vulnerability lookup table
+    ├── limitations.md                                        ← ⚠️ what this skill cannot find (honest limits)
     ├── methodology.md  chaining-and-impact.md                ← lifecycle + 🔗 compose findings → impact
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← the governance spine
     ├── recon/  web/  api/  identity/  secrets-and-supply-chain/

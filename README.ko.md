@@ -22,7 +22,6 @@
 
 - 출시를 앞두고 (대개 AI로 작성한) 코드를 직접 점검하려는 **개발자·창업자**
 - 인가된 범위에서 반복 가능한 방법론이 필요한 **버그바운티 헌터·펜테스터**
-- 특정 분야를 깊이 파고드는 **CTF 참가자·학습자**
 
 ## 무엇이 다른가
 
@@ -35,6 +34,10 @@
   취약점들이 있습니다. 그러한 연계는 하나의 Critical로 다룹니다 → [체이닝](references/chaining-and-impact.md).
 - **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. LLM이 가장 취약한 지점이
   '그럴듯한 허위 취약점'이므로, 낮은 오탐률이 곧 신뢰성입니다 → [심각도 평가](references/severity-and-triage.md).
+- **코드 패턴을 기계적으로 매칭합니다.** [패턴 트리거 테이블](references/pattern-triggers.md)이 코드 패턴을
+  취약점 점검으로 직접 연결해 주어, 원리에서 합성하는 과정 없이도 바로 확인이 가능합니다.
+- **한계에 대해 솔직합니다.** [한계 문서](references/limitations.md)가 정적/LLM 분석으로 *찾을 수 없는 것*을
+  명시하여, 클린 리포트가 "취약점이 없다"는 뜻이 아님을 분명히 합니다.
 
 ## 설치
 
@@ -98,6 +101,8 @@ Longinus/
 └── references/                     ← 실제 플레이북 트리
     ├── 00-map.md                   ← 전체 트리 지도 + 증상→파일 점프 테이블
     ├── authorization-and-scope.md  attacker-mindset.md       ← ⛔ 게이트 + 🧠 공격자 사고법
+    ├── pattern-triggers.md                                   ← 🎯 코드 패턴 → 취약점 매핑 테이블
+    ├── limitations.md                                        ← ⚠️ 이 스킬이 찾을 수 없는 것 (정직한 한계)
     ├── methodology.md  chaining-and-impact.md                ← 진행 절차 + 🔗 발견 연계
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← 거버넌스 spine
     ├── recon/  web/  api/  identity/  secrets-and-supply-chain/

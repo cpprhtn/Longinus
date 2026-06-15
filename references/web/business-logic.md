@@ -68,6 +68,114 @@ set *after* granting the benefit; no unique constraint / no transaction around a
 - **Handle exceptional conditions** explicitly (A10:2025): fail closed, validate boundaries, don't let
   errors/timeouts leave value half-transferred or grant default access.
 
+## DO NOT report as a business logic flaw if…
+
+- The price/total is **recomputed server-side** and the client value is used only for display/UX
+- The "race condition" is inside an **atomic DB operation** (transaction + row lock + unique constraint)
+- The "skipped step" is actually **server-enforced** (the endpoint checks prior state before proceeding)
+- The "limit bypass" is a **UI-only limit** with server-side enforcement you missed (check middleware)
+- You **cannot articulate an unauthorized outcome** the attacker achieves — no impact = no bug
+
+---
+
+## Vulnerable ↔ fixed code examples
+
+### Price tampering (the most common business logic bug)
+
+```python
+# ❌ VULNERABLE — trusts client-sent price
+@app.route('/checkout', methods=['POST'])
+def checkout():
+    item_id = request.json['item_id']
+    price = request.json['price']       # attacker sends price=0.01
+    quantity = request.json['quantity']
+    total = price * quantity
+    charge_card(user, total)            # charges $0.01 instead of $99.99
+    fulfill_order(user, item_id, quantity)
+
+# ✅ FIXED — server recomputes price from trusted source
+@app.route('/checkout', methods=['POST'])
+def checkout():
+    item_id = request.json['item_id']
+    quantity = request.json['quantity']
+    item = Item.query.get_or_404(item_id)
+    total = item.price * quantity       # price from DB, not from request
+    charge_card(user, total)
+    fulfill_order(user, item_id, quantity)
+```
+
+### Race condition — coupon double-spend
+
+```javascript
+// ❌ VULNERABLE — check-then-act without atomicity
+app.post('/redeem', async (req, res) => {
+  const coupon = await Coupon.findById(req.body.couponId);
+  if (coupon.used) return res.status(400).send('Already used');
+  // RACE WINDOW: 20 parallel requests all pass the check above
+  await applyDiscount(req.user, coupon.value);
+  coupon.used = true;
+  await coupon.save();   // too late — discount applied N times
+});
+
+// ✅ FIXED — atomic conditional update (one winner, others no-op)
+app.post('/redeem', async (req, res) => {
+  const result = await Coupon.updateOne(
+    { _id: req.body.couponId, used: false },   // condition IS the lock
+    { $set: { used: true, usedBy: req.user.id, usedAt: new Date() } }
+  );
+  if (result.modifiedCount === 0) return res.status(400).send('Already used');
+  const coupon = await Coupon.findById(req.body.couponId);
+  await applyDiscount(req.user, coupon.value);
+});
+```
+
+### Step-skipping (workflow bypass)
+
+```python
+# ❌ VULNERABLE — no server-side state machine; client can jump to confirmation
+@app.route('/order/confirm', methods=['POST'])
+def confirm_order():
+    order = Order.query.get(request.json['order_id'])
+    order.status = 'confirmed'   # no check that payment actually succeeded
+    db.session.commit()
+    ship_order(order)
+
+# ✅ FIXED — enforce state transition server-side
+@app.route('/order/confirm', methods=['POST'])
+def confirm_order():
+    order = Order.query.get(request.json['order_id'])
+    if order.status != 'paid':                         # requires prior state
+        return abort(400, 'Order must be paid first')
+    if order.user_id != current_user.id:               # ownership check
+        return abort(403)
+    order.status = 'confirmed'
+    db.session.commit()
+    ship_order(order)
+```
+
+### Negative quantity (refund abuse)
+
+```javascript
+// ❌ VULNERABLE — negative quantity creates a credit
+app.post('/cart/add', (req, res) => {
+  const { itemId, quantity } = req.body;  // quantity = -5 → refunds $50
+  const item = catalog.get(itemId);
+  cart.total += item.price * quantity;     // negative × positive = negative total
+});
+
+// ✅ FIXED — validate range server-side
+app.post('/cart/add', (req, res) => {
+  const { itemId, quantity } = req.body;
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+    return res.status(400).send('Invalid quantity');
+  }
+  const item = catalog.get(itemId);
+  cart.total += item.price * quantity;
+});
+```
+
+---
+
 ## Advanced: single-packet race conditions
 
 Modern race exploitation isn't about raw speed — it's **simultaneity**. The **single-packet attack**

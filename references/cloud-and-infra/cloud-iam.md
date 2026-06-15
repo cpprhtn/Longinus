@@ -83,6 +83,91 @@ metadata → role credentials → IAM access.
   SCC on; alerting on root use, policy changes, new keys, anomalous API calls. Absence = the breach is
   invisible and is itself a finding.
 
+## DO NOT report as a cloud IAM vulnerability if…
+
+- The `Action: "*"` is in a **Deny** policy or scoped by a tight `Condition` key
+- The "public bucket" **intentionally serves public static assets** (website hosting) with
+  no sensitive data and a documented justification
+- The "over-privileged role" is a **break-glass / emergency** role with compensating
+  controls (MFA-protected, logged, alarmed, restricted to a specific human)
+- The "IMDSv1" finding is on an instance that has **no SSRF-vulnerable service** running
+  and no outbound network path — still recommend v2, but severity is Low
+- The permissions are granted to a **Service Control Policy (SCP)** boundary that
+  further restricts them — the effective permissions may be narrower than they appear
+
+---
+
+## Vulnerable ↔ fixed IaC examples
+
+### Over-privileged IAM role (the most common cloud finding)
+
+```hcl
+# ❌ VULNERABLE — wildcard admin on a Lambda execution role
+resource "aws_iam_role_policy" "lambda_policy" {
+  role = aws_iam_role.lambda_role.id
+  policy = jsonencode({
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "*"              # full admin — blast radius is entire account
+      Resource = "*"
+    }]
+  })
+}
+
+# ✅ FIXED — least-privilege scoped to what the function actually needs
+resource "aws_iam_role_policy" "lambda_policy" {
+  role = aws_iam_role.lambda_role.id
+  policy = jsonencode({
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["dynamodb:GetItem", "dynamodb:PutItem"]
+      Resource = "arn:aws:dynamodb:us-east-1:123456789012:table/orders"
+    }]
+  })
+}
+```
+
+### Public S3 bucket
+
+```hcl
+# ❌ VULNERABLE — public read on a data bucket
+resource "aws_s3_bucket_acl" "data" {
+  bucket = aws_s3_bucket.data.id
+  acl    = "public-read"          # world-readable — data breach waiting to happen
+}
+
+# ✅ FIXED — block all public access at bucket level
+resource "aws_s3_bucket_public_access_block" "data" {
+  bucket                  = aws_s3_bucket.data.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+```
+
+### IMDSv1 enabled (SSRF → credential theft)
+
+```hcl
+# ❌ VULNERABLE — IMDSv1 allows unauthenticated metadata access
+# One SSRF = full role credentials
+resource "aws_instance" "app" {
+  metadata_options {
+    http_tokens = "optional"      # IMDSv1 still works alongside v2
+  }
+}
+
+# ✅ FIXED — require IMDSv2 (token-based, not reachable via simple SSRF redirect)
+resource "aws_instance" "app" {
+  metadata_options {
+    http_tokens                 = "required"   # IMDSv2 only
+    http_put_response_hop_limit = 1            # prevent container-to-host relay
+  }
+}
+```
+
+---
+
 ## Static red flags (IaC/config)
 
 ```bash

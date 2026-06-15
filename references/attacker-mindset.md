@@ -28,6 +28,10 @@ entire tree is just "what happens at boundary X."
 - **Instances:** essentially all of [web/](web/README.md); identity context →
   [identity/README.md](identity/README.md); the model/tool boundary →
   [ai-llm/agentic-and-mcp.md](ai-llm/agentic-and-mcp.md).
+- **Quick heuristic (code audit):** grep for every place user input is read (`req.body`, `req.params`,
+  `req.query`, `request.form`, `request.args`, `@RequestParam`, `params[:]`, `sys.argv`). For each,
+  trace forward: does it reach a sink (DB, shell, HTML, file path, URL fetch, LLM prompt, IAM call)
+  without sanitization/parameterization between? If yes → open the matching sink's leaf.
 
 ## 2. Hunt parser / impedance differentials
 
@@ -44,6 +48,10 @@ single most productive idea in offensive research of the last decade.
   [web/xss.md](web/xss.md); object-merge semantics → [web/prototype-pollution.md](web/prototype-pollution.md);
   XML/SAML canonicalization → [identity/README.md](identity/README.md); content-type confusion →
   [web/file-upload-and-path.md](web/file-upload-and-path.md).
+- **Quick heuristic (code audit):** look for any place where input is validated/sanitized
+  *before* being passed to a different library/service that re-parses it. Especially: URL validation
+  then `fetch()`; path validation then `open()`; HTML sanitization then DOM insertion; one JSON parser
+  then another. If the validator and consumer are different implementations → differential possible.
 
 ## 3. Find the confused deputy
 
@@ -59,6 +67,10 @@ whose authority should apply.** This is the generative core of SSRF, CSRF, SSO, 
   [identity/README.md](identity/README.md); the agent's credentials vs the end-user's →
   [ai-llm/agentic-and-mcp.md](ai-llm/agentic-and-mcp.md); an over-permissioned cloud role →
   [cloud-and-infra/cloud-iam.md](cloud-and-infra/cloud-iam.md).
+- **Quick heuristic (code audit):** find every place the server makes an outbound request
+  (`fetch`, `requests.get`, `http.get`, `curl`), performs a file operation, or calls a cloud API.
+  For each: can the *user* control the target/arguments? If yes, the server is the confused deputy.
+  Also: any `PassRole`/`AssumeRole`/`actAs` in cloud configs — who can trigger it?
 
 ## 4. Attack state, time & order
 
@@ -70,6 +82,11 @@ do it twice at once, out of order, skip a step, replay an old token.
 - **Instances:** races / single-packet attack, step-skipping, double-spend →
   [web/business-logic.md](web/business-logic.md); session fixation, token replay →
   [web/auth-and-session.md](web/auth-and-session.md).
+- **Quick heuristic (code audit):** grep for `if.*balance|if.*count|if.*used|if.*stock|if.*quantity`.
+  For each: is the check AND the subsequent modification inside the **same DB transaction with a row
+  lock**? If they're separate operations (read → app logic → write) → race condition candidate. Also:
+  any multi-step flow (checkout, verify-email, password-reset) — can step N be reached without
+  completing step N-1? Look for endpoints with no prior-state check.
 
 ## 5. Distrust every layer of encoding — *the value you check is not the value that runs*
 
@@ -82,6 +99,11 @@ Canonicalization, decode/re-encode round-trips, and second-order storage mean va
   → [web/xss.md](web/xss.md); `..%252f` / double-decode path traversal, archive-extract path
   confusion → [web/file-upload-and-path.md](web/file-upload-and-path.md). This is also why **fix-bypass
   testing** matters ([methodology.md](methodology.md) §9): a filter that blocks `../` but not `..%2f`.
+- **Quick heuristic (code audit):** search for `| safe`, `mark_safe`, `dangerouslySetInnerHTML`,
+  `v-html`, `{!! !!}` (Blade), `noescape` — these explicitly disable auto-escaping. Each one must
+  be justified by the developer. Also: data stored in DB then later rendered without escaping (stored
+  XSS); and any blocklist-based filter (look for "deny" / "block" / "forbidden" lists — they almost
+  always miss an encoding variant).
 
 ## 6. Hunt the developer's "impossible"
 
@@ -94,6 +116,11 @@ endpoint," "the happy path is the only path." Each assumption is an attack surfa
 - **Instances:** IDOR/BOLA, forced browsing, mass assignment → [web/access-control.md](web/access-control.md)
   · [api/README.md](api/README.md); workflow/edge-case abuse → [web/business-logic.md](web/business-logic.md);
   exposed shadow/old endpoints → [api/README.md](api/README.md).
+- **Quick heuristic (code audit):** search for any client-sent value that affects money, access, or
+  state: `req.body.price`, `req.body.role`, `req.body.userId`, `req.body.isAdmin`,
+  `req.body.discount`, `req.body.quantity`. Each is a "the client would never change this" assumption.
+  Also: scan the route table for endpoints with no auth middleware — is each one genuinely public, or
+  did someone forget?
 
 ---
 
@@ -108,6 +135,24 @@ endpoint," "the happy path is the only path." Each assumption is an attack surfa
 
 These six are the recurring structure underneath the named bug classes. When you meet a target — or a
 technology — with no matching leaf, run the lenses anyway: that's how new bug classes get found.
+
+## False-positive guards (when a principle lights up but it's NOT a bug)
+
+Before reporting, verify the finding is real. A principle telling you *where to look* does not mean a
+bug *exists* — still **prove it or park it**.
+
+| Principle | DO NOT report if… |
+|---|---|
+| 1. Trust boundary crossed | The framework auto-sanitizes at that boundary (parameterized ORM, React JSX auto-escape, Go `html/template`) |
+| 2. Parser differential | Both parsers normalize to the same result *before* the security check, or only one parser is in the path |
+| 3. Confused deputy | The deputy re-checks authorization **as the caller** (not its own identity) before acting |
+| 4. State/time/order | The operation is inside a DB transaction with appropriate isolation level + row lock, or uses an atomic conditional update |
+| 5. Encoding mutation | Input is canonicalized *before* the security check, and the check uses the same encoding form as the sink |
+| 6. Developer's "impossible" | The assumption IS defended — just not where you looked (middleware, decorator, framework convention, global filter) |
+
+**The meta-guard:** if you cannot construct a concrete input (even a theoretical one showing the logic
+flow) that demonstrates the vulnerability, move it to **"Needs Validation"** rather than reporting it
+as confirmed. See [limitations.md](limitations.md) for what static analysis fundamentally cannot reach.
 
 ## References
 

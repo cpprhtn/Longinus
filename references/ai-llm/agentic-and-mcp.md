@@ -81,6 +81,72 @@ LLM calls cost money and compute — abuse = DoS + bill shock + IP theft:
 - **Fix:** per-user rate/token/cost limits and budgets, input/output size caps, loop/step ceilings and
   timeouts for agents, monitoring/alerting on spend and anomalous usage, and abuse detection.
 
+## Vulnerable ↔ fixed application code
+
+### Excessive agency — unvalidated tool arguments
+
+```python
+# ❌ VULNERABLE — model controls DB query with no validation
+tools = [{"name": "run_query", "description": "Run a database query",
+          "parameters": {"query": {"type": "string"}}}]
+
+def run_query(query):
+    return db.execute(query)   # model sends "DROP TABLE users" if prompt-injected
+
+# ✅ FIXED — validate tool arguments deterministically
+ALLOWED_TABLES = {'products', 'categories', 'reviews'}
+
+def run_query(query):
+    parsed = sqlparse.parse(query)[0]
+    if parsed.get_type() != 'SELECT':
+        raise PermissionError("Only SELECT queries allowed")
+    tables = extract_tables(parsed)
+    if not all(t in ALLOWED_TABLES for t in tables):
+        raise PermissionError("Query references unauthorized table")
+    return db.execute(query)
+```
+
+### Cross-tenant RAG leakage
+
+```python
+# ❌ VULNERABLE — no tenant filter on vector search
+def answer(user_question, user):
+    results = vector_store.similarity_search(user_question, k=5)
+    # returns documents from ALL tenants — user A reads tenant B's data
+
+# ✅ FIXED — enforce tenant isolation at query time (server-side, not prompt-based)
+def answer(user_question, user):
+    results = vector_store.similarity_search(
+        user_question,
+        k=5,
+        filter={"tenant_id": user.tenant_id}   # hard filter, not a prompt instruction
+    )
+```
+
+### Missing human-in-the-loop for sensitive actions
+
+```python
+# ❌ VULNERABLE — agent auto-executes payment without approval
+async def handle_tool_call(tool_name, args):
+    if tool_name == "send_payment":
+        return payment_api.send(args["to"], args["amount"])  # injection → money gone
+
+# ✅ FIXED — gate sensitive actions on explicit user approval
+SENSITIVE_TOOLS = {"send_payment", "delete_account", "send_email"}
+
+async def handle_tool_call(tool_name, args, user_session):
+    if tool_name in SENSITIVE_TOOLS:
+        approval = await request_user_approval(
+            user_session,
+            f"Agent wants to {tool_name} with args: {args}. Approve?"
+        )
+        if not approval:
+            return {"error": "User denied this action"}
+    return execute_tool(tool_name, args)
+```
+
+---
+
 ## Confirm (PoC)
 
 Show an unauthorized *action* or *leak*, reproducibly: "an injected calendar invite causes the agent
