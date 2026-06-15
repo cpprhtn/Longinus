@@ -121,6 +121,22 @@ This is the crown-jewel discipline that makes the output trustworthy.
 > (operating principles) intentionally repeat it for weaker models — **keep them in sync with this
 > table; if they ever disagree, this one wins.**
 
+## Design-intent reconciliation (is it deliberate?)
+
+Before finalizing a mid/low finding, check it against the project's **Intent Brief**
+([design-intent.md](design-intent.md)):
+- **Matches a *documented* accepted-risk** → downgrade to **Informational**, *cite the doc/comment*.
+- **Contradicts** stated intent → keep or **raise** severity (the system does what it was *not* designed to).
+- Relies on an **undocumented** assumption → it **stays a finding** ("confirm this is intended").
+
+> Intent gives context, never absolution: a mid-risk issue is "deliberate" only if it's *written down*.
+
+## Fix trade-offs are informational
+
+Each fix is shown as **current → proposed → trade-off** — the perf/UX cost of applying the proposed
+change ([reporting-and-disclosure.md](reporting-and-disclosure.md)). The trade-off **never lowers
+severity**: Critical/High get fixed regardless; it only informs *how* to fix, not *whether*.
+
 ## Prioritize the fix list
 
 Order by `severity` then `effort` (quick critical wins first), and flag:

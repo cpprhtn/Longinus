@@ -74,6 +74,9 @@ it's just generic DevSecOps noise:
    ends with the **structural control + the gate** (copy the template), not just the per-line patch.
 3. Offer the gate as a concrete artifact — the templates are drop-in starting points the dev can wire
    into CI/pre-commit today.
+4. **Name the gate's cost.** A CI gate adds build time, a validation layer adds latency, a policy gate
+   can block a deploy — report this as the gate's **trade-off** ([reporting-and-disclosure.md](reporting-and-disclosure.md))
+   so the owner adopts it knowingly. The trade-off is informational; it never lowers the finding's severity.
 
 ## Don't over-enforce (the FP discipline still applies)
 

@@ -17,6 +17,7 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 | **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | route → the `## Mechanical scan` section at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring. Use the fixed severities from the mechanical scan. |
 | **standard** | Default. Full audit for one target. | route → leaf (full) → spine docs as needed. | Domains not relevant to this target. |
 | **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS chaining-and-impact.md, all relevant domain `Mechanical scan`s, cross-domain pivot analysis. | Nothing — full coverage. |
+| **continuous / diff** | scheduled / CI re-runs on a watched project | only the **diff since the last report** (`git diff <prior-sha>..HEAD`) + a re-check of prior open findings | unchanged code — audit only what changed, append a delta ([continuous-audit.md](continuous-audit.md)) |
 
 ### Quick mode instructions
 
@@ -56,6 +57,13 @@ Default. Profile → route → leaf (full) → PoC → triage → report. See "T
 
 When you meet code or a target for the first time and aren't sure which leaf to open, execute these
 steps **mechanically, in order**. Do not skip steps.
+
+### Step 0 — Read the design intent
+
+Before the greps, skim the project's own docs (`CLAUDE.md` / README / `docs/`+ADRs / `SECURITY.md` /
+intent-bearing comments) and build the **Intent Brief**: purpose · *designed* trust boundaries · stated
+assumptions · *documented* accepted-risks. Aim the rest of the audit at the input vectors that
+**violate** it, and reconcile findings against it. See [design-intent.md](design-intent.md).
 
 ### Step 1 — Identify the stack (look for these files)
 

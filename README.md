@@ -1,6 +1,6 @@
 # 🗡️ Longinus
 
-> *The spear that pierces your own armor first.*
+> *The spear that pierces your own armor first.*  
 > An offensive-security skill that plays attacker so the **defender** finds the hole before a real adversary does.
 
 **English** · [한국어](README.ko.md)
@@ -11,6 +11,101 @@ reports **prioritized findings — each with a reproducible proof-of-concept and
 tree of offensive-security playbooks plus an orchestration brain ([SKILL.md](SKILL.md)) that aims them
 at a target (web, APIs, identity, cloud, mobile, AI/LLM, binaries, crypto, forensics — as deep as the
 target needs).
+
+## Install
+
+Longinus is a Claude Code Skill — Claude Code auto-discovers any skill placed in a `skills/` directory.
+
+```bash
+# Per-project (commit it with your repo, share with the team)
+git clone https://github.com/cpprhtn/Longinus.git .claude/skills/longinus
+
+# Personal (available in every project you work on)
+git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
+```
+
+Clone the **whole tree** so `SKILL.md` sits at the folder root with `references/` and `research/`
+beside it — the internal links are relative, so copying individual files breaks it.
+
+**Optional — multi-agent layer.** The skill works standalone. For a coordinated audit where each domain
+runs in its **own context** (no cross-domain bias, parallel specialists), copy the bundled
+[subagents](agents/README.md) where Claude Code discovers them, then restart Claude Code:
+
+```bash
+# Per-project (when the skill is cloned to .claude/skills/longinus)
+mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
+
+# Or personal — available in every project (after a personal skill install)
+cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
+```
+
+Then ask *"run a Longinus audit"* and the **orchestrator** dispatches the specialists. See
+[agents/README.md](agents/README.md).
+
+## Usage
+
+After installing, invoke it **three ways**:
+
+```text
+1) Slash command   /longinus            ← standard audit
+                   /longinus quick      ← fast mechanical scan
+                   /longinus deep       ← full multi-domain sweep
+
+2) Just ask        "Audit this repo before I launch."
+                   "Review the security of this FastAPI API."
+                   "Red-team the prompt injection surface of my agent."
+
+3) Multi-agent     "run a Longinus audit"   (if you installed agents/ above)
+                   → the orchestrator dispatches the domain specialists
+```
+
+**It's stack-agnostic** — Python/FastAPI, Node/Express, React Native, Go, Terraform/cloud, an LLM/RAG
+app — because it **profiles the target first**, then routes to the right playbooks. It guides Claude to
+audit your code (read-only by default); it is *not* an automatic scanner that runs on its own. Every run
+writes a fixed-format report to `.longinus/reports/longinus_<timestamp>.md`. Before testing anything you
+don't own, clear the [authorization gate](references/authorization-and-scope.md).
+
+> ⛔ **Offense in service of defense.** Longinus is for code you own, targets you're explicitly
+> authorized to test, and CTF/lab environments — never for unauthorized systems. See
+> [docs/ethics.md](docs/ethics.md).
+
+## Skill modes
+
+Pick how deep to go — pass it on the command, or just say it. Default is **standard**.
+
+| Mode | Invoke | What it does |
+|---|---|---|
+| **quick** | `/longinus quick` · *"run a quick security audit"* | Mechanical grep scans (each leaf's `## Mechanical scan`), fixed severities, no CVSS/chaining — one findings table. Built for **CI gates** and **small on-device models (11B+)** like Qwen 3 8B / Llama 3.1 8B (mechanical instructions, no open-ended reasoning). |
+| **standard** | `/longinus` · *"audit this repo"* | **Default.** Profile → route → full leaf analysis → PoC → triage (CVSS 4.0) → report. |
+| **deep** | `/longinus deep` · *"deep audit this repo"* | Standard + all secondary domain quick-checks + cross-domain [chaining](references/chaining-and-impact.md). |
+| **continuous** | `/longinus continuous` · cron/CI | Audits only the `git diff` since the last report + re-checks prior findings → appends a delta ([continuous-audit.md](references/continuous-audit.md)). |
+
+> Full mode procedures live in [references/audit-modes.md](references/audit-modes.md). If you run a local
+> model for security checks, start with **quick**.
+
+## What makes it different
+
+Not just another playbook pack:
+
+- **Reasons from principles, not a checklist.** Instead of walking a fixed list, it derives bugs from
+  six root principles that *generate* vulnerability classes — trust boundaries, parser differentials,
+  confused deputy, state & time, encoding, the developer's unstated assumptions →
+  [pattern triggers & attacker principles](references/pattern-triggers.md). It catches classes that
+  don't even have a name yet.
+- **Reads your design intent first.** Builds an *Intent Brief* from your `CLAUDE.md`/README/ADRs, then
+  hunts where the implementation diverges from it — and won't flag a *documented* deliberate decision as
+  a bug → [design-intent](references/design-intent.md).
+- **Rates findings by chained impact, not in isolation.** Issues that are individually "low" can
+  compose into account takeover; that chain is treated as one **Critical** →
+  [chaining](references/chaining-and-impact.md).
+- **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. Mandatory
+  severity gates force Critical/High findings *down* when preconditions aren't met — an LLM's weakest
+  point is severity inflation → [severity & triage](references/severity-and-triage.md).
+- **One fixed report shape, every time.** Every audit emits the same template (machine-readable header +
+  fixed sections) so reports are consistent and comparable across projects →
+  [report template](references/report-template.md).
+- **Honest about its limits.** A [limitations doc](references/limitations.md) says what static/LLM
+  analysis *cannot* find, so a clean report never implies "no vulnerabilities exist."
 
 ## Why
 
@@ -24,48 +119,6 @@ target needs).
 
 - **Developers & founders** auditing their own (often AI-written) code before launch.
 - **Bug-bounty hunters & pentesters** who need a repeatable methodology against authorized scope.
-
-## What makes it different
-
-Not just another playbook pack:
-
-- **Three audit modes (quick / standard / deep).** Quick mode runs mechanical grep-based scans with
-  fixed severities — ideal for CI gates and small on-device models (11B+). Standard mode is a full
-  single-target audit. Deep mode sweeps all domains with cross-domain chaining analysis.
-- **Reasons from principles, not a checklist.** Instead of walking a fixed list, it derives bugs from
-  six root principles that *generate* vulnerability classes — trust boundaries, parser differentials,
-  confused deputy, state & time, encoding, the developer's unstated assumptions →
-  [pattern triggers & attacker principles](references/pattern-triggers.md). It catches classes that
-  don't even have a name yet.
-- **Rates findings by chained impact, not in isolation.** Issues that are individually "low" can
-  compose into account takeover; that chain is treated as one **Critical** →
-  [chaining](references/chaining-and-impact.md).
-- **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. Mandatory
-  severity gates force Critical/High findings *down* when preconditions aren't met — an LLM's weakest
-  point is severity inflation → [severity & triage](references/severity-and-triage.md).
-- **Integrated dependency health checks.** SCA tools run as part of the audit flow; CVEs without
-  confirmed reachability are flagged Info-only, not inflated to High/Critical.
-- **Mechanical pattern lookup for code audits.** A
-  [pattern-trigger table](references/pattern-triggers.md) maps code patterns directly to
-  vulnerability checks with false-positive guards — no principle synthesis needed.
-- **Honest about its limits.** A [limitations doc](references/limitations.md) says what static/LLM
-  analysis *cannot* find, so a clean report never implies "no vulnerabilities exist."
-
-## Audit modes
-
-| Mode | When to use | What happens |
-|---|---|---|
-| **quick** | Fast first pass, CI gate checks, **small on-device models (11B+)** | Runs mechanical grep scans from each leaf's `## Mechanical scan` section. Fixed severities, no CVSS scoring, no chaining analysis. One table of findings. |
-| **standard** | Default. Full audit for one target. | Profile → route → full leaf analysis → PoC → triage (CVSS 4.0) → report. |
-| **deep** | Comprehensive formal audit, multi-domain sweep. | Standard + all secondary domain quick-checks + cross-domain chaining ([chaining-and-impact.md](references/chaining-and-impact.md)). |
-
-**Quick mode is designed for small on-device models** (e.g., Qwen 3 8B, Llama 3.1 8B) that can
-follow mechanical instructions but struggle with open-ended reasoning. It works entirely through
-pattern matching — no principle synthesis, no CVSS calculation, no chain analysis. If you're running
-a local model for security checks, start here.
-
-Specify the mode when invoking: *"run a quick security audit"*, *"deep audit this repo"*, or just
-ask a security question (defaults to **standard**).
 
 ## Dependency CVE checks
 
@@ -93,52 +146,6 @@ Step 1.5 Run the matching SCA tool:
 The SCA tools must be installed in the environment. `npm audit` comes with Node; others
 (`pip-audit`, `trivy`, `govulncheck`, …) require separate installation. If a tool is missing,
 that check is skipped — this is an environment constraint, not a skill limitation.
-
-## Install
-
-Longinus is a Claude Code Skill — Claude Code auto-discovers any skill placed in a `skills/` directory.
-
-```bash
-# Per-project (commit it with your repo, share with the team)
-git clone https://github.com/cpprhtn/Longinus.git .claude/skills/longinus
-
-# Personal (available in every project you work on)
-git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
-```
-
-Clone the **whole tree** so `SKILL.md` sits at the folder root with `references/` and `research/`
-beside it — the internal links are relative, so copying individual files breaks it.
-
-**Optional — multi-agent layer.** The skill works standalone. For a coordinated audit where each domain
-runs in its **own context** (no cross-domain bias, parallel specialists), copy the bundled
-[subagents](agents/README.md) where Claude Code discovers them, then restart Claude Code:
-
-```bash
-# Personal — available in every project (after a personal skill install)
-cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
-
-# Or per-project (when the skill is cloned to .claude/skills/longinus)
-mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
-```
-
-Then ask *"run a Longinus audit"* and the **orchestrator** dispatches the specialists. See
-[agents/README.md](agents/README.md).
-
-## Usage
-
-After install, just ask a security question, or run `/longinus`:
-
-> "Audit this repo before I launch." · "Review the security of this FastAPI API." · "Check this React
-> Native app too."
-
-**It's stack-agnostic** — Python/FastAPI, Node/Express, React Native, Go, Terraform/cloud, an LLM/RAG
-app — because it **profiles the target first**, then routes to the right playbooks. It guides Claude to
-audit your code (read-only by default); it is *not* an automatic scanner that runs on its own. Before
-testing anything you don't own, clear the [authorization gate](references/authorization-and-scope.md).
-
-> ⛔ **Offense in service of defense.** Longinus is for code you own, targets you're explicitly
-> authorized to test, and CTF/lab environments — never for unauthorized systems. See
-> [docs/ethics.md](docs/ethics.md).
 
 ## Documentation
 
@@ -191,6 +198,23 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.4.0
+
+- **Design-intent first** — read the project's design intent (`CLAUDE.md`/README/ADRs/`SECURITY.md`/
+  comments) *before* scanning, build an **Intent Brief** (purpose · designed trust boundaries · stated
+  assumptions · documented accepted-risks), and aim testing at the input vectors that **violate** it.
+  Findings reconcile against intent: documented accepted-risk → Informational (cited); contradicts intent
+  → real/higher; *undocumented* assumption → still a finding. (`references/design-intent.md`)
+- **Fix trade-offs** — every fix is shown as **current → proposed → trade-off** (the perf/UX cost of the
+  change); informational — severity still decides *whether* to fix.
+- **Report as a file + continuous/diff mode** — every audit writes `.longinus/reports/longinus_<ts>.md`;
+  re-runs audit only the `git diff` since the last report and append a delta (drive it from cron/CI or
+  `/schedule`). (`references/continuous-audit.md`)
+- The orchestrator builds the Intent Brief once and passes it to every specialist.
+- **One canonical report template** (`references/report-template.md`) — every audit emits the *same*
+  fixed shape (8 sections + a machine-readable YAML header), ending report inconsistency across people
+  and projects and making reports aggregatable/diffable.
 
 ### v0.3.0
 

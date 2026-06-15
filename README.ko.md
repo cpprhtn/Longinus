@@ -1,14 +1,105 @@
 # 🗡️ Longinus
 
-> *스스로의 방어를 가장 먼저 시험하는 창.*
+> *스스로의 방어를 가장 먼저 시험하는 창.*  
 > 실제 공격자보다 먼저, 방어하는 쪽이 자신의 취약점을 발견하도록 돕는 공격 보안 스킬.
 
 [English](README.md) · **한국어**
 
-**Longinus는 Claude Code를 보안 감사관으로 바꿔 주는 [스킬](https://docs.claude.com/en/docs/claude-code/skills)
+**Longinus는 Claude Code를 보안 검사관으로 바꿔 주는 [스킬](https://docs.claude.com/en/docs/claude-code/skills)
 입니다.** 공격자의 관점에서 내 프로젝트의 취약점을 찾아내고, 우선순위를 매긴 결과를 재현 가능한 PoC와 구체적인
 수정 방안과 함께 제시합니다. 트리 구조로 정리된 공격 보안 플레이북과, 그것을 타깃에 맞게 운용하는 오케스트레이션
 로직([SKILL.md](SKILL.md))으로 구성됩니다.
+
+## 설치
+
+Longinus는 Claude Code 스킬이며, `skills/` 디렉터리에 두면 Claude Code가 자동으로 인식합니다.
+
+```bash
+# 프로젝트 단위 — repo에 함께 커밋하여 팀과 공유
+git clone https://github.com/cpprhtn/Longinus.git .claude/skills/longinus
+
+# 개인 단위 — 내 모든 프로젝트에서 사용
+git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
+```
+
+`SKILL.md`가 폴더 최상위에 있고 `references/`, `research/`가 그 옆에 있어야 하므로 **전체 트리를 그대로
+클론**하세요. 내부 링크가 상대경로라, 일부 파일만 복사하면 동작하지 않습니다.
+
+**옵션 — 멀티에이전트 레이어.** 스킬은 단독으로 동작합니다. 각 도메인을 **독립 컨텍스트**에서 병렬로 검사하고
+싶다면(도메인 간 편향 없음), 번들된 [서브에이전트](agents/README.md)를 Claude Code가 인식하는 위치로 복사한 뒤
+Claude Code를 재시작하세요:
+
+```bash
+# 프로젝트 단위 — repo의 .claude/agents/ 에 (스킬을 .claude/skills/longinus 로 클론한 경우)
+mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
+
+# 또는 개인 단위 — 모든 프로젝트에서 사용 (개인 스킬 설치 후)
+cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
+```
+
+그다음 (Claude Code **재시작 후**) *"Longinus 검사 돌려줘"* 라고 **말로 요청만 하면** — Claude가 각 에이전트의
+`description`을 보고 **오케스트레이터에 자동 위임**합니다. 자동 위임이 안 되면 *"longinus-orchestrator 에이전트로
+검사해 줘"* 처럼 명시해 호출하세요. → [agents/README.md](agents/README.md).
+
+## 사용
+
+설치 후 **세 가지 방법**으로 호출합니다:
+
+```text
+1) 슬래시 명령   /longinus            ← standard 검사
+              /longinus quick      ← 빠른 기계적 스캔
+              /longinus deep       ← 다중 도메인 정밀 검사
+
+2) 그냥 요청     "출시 전에 이 저장소를 점검해 줘."
+                "이 FastAPI API의 보안을 검토해 줘."
+                "내 에이전트의 프롬프트 인젝션 표면을 레드팀해 줘."
+
+3) 멀티에이전트  "Longinus 검사 돌려줘"   (위에서 agents/ 를 설치한 경우)
+                → 오케스트레이터가 도메인 전문가들을 지휘
+```
+
+**스택을 가리지 않습니다.** Python/FastAPI, Node/Express, React Native, Go, Terraform/클라우드, LLM/RAG 앱
+등 — 타깃을 먼저 분석한 뒤 알맞은 플레이북으로 안내합니다. 다만 독립적으로 실행되는 자동 스캐너가 아니라, Claude가
+코드를 직접 검토하도록 이끄는 도구이며 기본 동작은 read-only입니다. 모든 실행은 고정 형식 보고서를
+`.longinus/reports/longinus_<타임스탬프>.md`에 작성합니다. 본인 소유가 아닌 대상을 테스트하기 전에는 반드시
+[인가 게이트](references/authorization-and-scope.md)를 확인하세요.
+
+> ⛔ **방어를 위한 공격입니다.** 내가 소유한 코드, 명시적으로 인가받은 타깃, CTF·실습 환경에서만 사용하세요.
+> 허가받지 않은 시스템에는 절대 사용하면 안 됩니다. [docs/ethics.md](docs/ethics.md)
+
+## 스킬 모드
+
+얼마나 깊게 갈지 고르세요 — 명령에 붙이거나, 말로 지정하면 됩니다. 기본은 **standard**.
+
+| 모드 | 호출 | 동작 |
+|---|---|---|
+| **quick** | `/longinus quick` · *"quick 보안 검사 해 줘"* | 기계적 grep 스캔(각 leaf의 `## Mechanical scan`), 고정 심각도, CVSS/체이닝 없음 — 결과는 테이블 하나. **CI 게이트**와 **소형 온디바이스 모델(11B+)** (Qwen 3 8B / Llama 3.1 8B 등, 기계적 지시는 따르나 자유 추론은 약함)용. |
+| **standard** | `/longinus` · *"이 저장소 검사해 줘"* | **기본값.** 프로파일 → 라우팅 → leaf 전체 분석 → PoC → 심각도 평가(CVSS 4.0) → 리포트. |
+| **deep** | `/longinus deep` · *"이 저장소 deep 검사해 줘"* | Standard + 모든 보조 도메인 quick-check + 도메인 간 [체이닝](references/chaining-and-impact.md). |
+| **continuous** | `/longinus continuous` · cron/CI | 직전 보고서 이후 `git diff`만 검사 + 기존 발견 재점검 → 델타 append ([continuous-audit.md](references/continuous-audit.md)). |
+
+> 모드별 상세 절차는 [references/audit-modes.md](references/audit-modes.md)에 있습니다. 로컬 모델로 보안
+> 점검을 한다면 **quick**부터 시작하세요.
+
+## 무엇이 다른가
+
+단순한 플레이북 모음이 아닙니다.
+
+- **체크리스트가 아니라 원리에서 출발합니다.** 정해진 목록을 훑는 대신, 취약점이 발생하는 여섯 가지 근본
+  원리(신뢰 경계, 파서 불일치, confused deputy, 상태·시간, 인코딩, 개발자의 암묵적 가정)에서 취약점을 도출합니다
+  → [패턴 트리거 & 공격자 원리](references/pattern-triggers.md). 아직 분류되지 않은 새로운 유형까지 찾아냅니다.
+- **설계 의도를 먼저 읽습니다.** `CLAUDE.md`/README/ADR에서 *Intent Brief*를 만든 뒤 구현이 의도에서
+  벗어난 지점을 사냥합니다 — *문서화된* 의도적 결정은 결함으로 보고하지 않습니다 →
+  [설계 의도](references/design-intent.md).
+- **개별 취약점이 아니라 연계 영향으로 평가합니다.** 단독으로는 낮은 등급이라도, 연결되면 계정 탈취로 이어지는
+  취약점들이 있습니다. 그러한 연계는 하나의 Critical로 다룹니다 → [체이닝](references/chaining-and-impact.md).
+- **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. 필수 심각도 게이트가
+  Critical/High 판정을 기계적으로 하향 조정하여, LLM의 고질적인 심각도 인플레이션을 억제합니다
+  → [심각도 평가](references/severity-and-triage.md).
+- **보고서는 항상 하나의 고정 형식.** 모든 검사가 동일한 템플릿(machine-readable 헤더 + 고정 섹션)을 출력해,
+  사람·프로젝트 간 보고서가 일관되고 비교 가능합니다 → [보고서 템플릿](references/report-template.md).
+- **한계에 대해 솔직합니다.** [한계 문서](references/limitations.md)가 정적/LLM 분석으로 *찾을 수 없는 것*을
+  명시하여, 클린 리포트가 "취약점이 없다"는 뜻이 아님을 분명히 합니다.
 
 ## 왜 필요한가
 
@@ -22,42 +113,6 @@
 
 - 출시를 앞두고 (대개 AI로 작성한) 코드를 직접 점검하려는 **개발자·창업자**
 - 인가된 범위에서 반복 가능한 방법론이 필요한 **버그바운티 헌터·펜테스터**
-
-## 무엇이 다른가
-
-단순한 플레이북 모음이 아닙니다.
-
-- **세 가지 감사 모드 (quick / standard / deep).** Quick 모드는 grep 기반의 기계적 스캔으로 CI 게이트와
-  소형 온디바이스 모델(11B+)에 적합합니다. Standard는 전체 단일 타깃 감사, Deep은 다중 도메인 교차 분석입니다.
-- **체크리스트가 아니라 원리에서 출발합니다.** 정해진 목록을 훑는 대신, 취약점이 발생하는 여섯 가지 근본
-  원리(신뢰 경계, 파서 불일치, confused deputy, 상태·시간, 인코딩, 개발자의 암묵적 가정)에서 취약점을 도출합니다
-  → [패턴 트리거 & 공격자 원리](references/pattern-triggers.md). 아직 분류되지 않은 새로운 유형까지 찾아냅니다.
-- **개별 취약점이 아니라 연계 영향으로 평가합니다.** 단독으로는 낮은 등급이라도, 연결되면 계정 탈취로 이어지는
-  취약점들이 있습니다. 그러한 연계는 하나의 Critical로 다룹니다 → [체이닝](references/chaining-and-impact.md).
-- **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. 필수 심각도 게이트가
-  Critical/High 판정을 기계적으로 하향 조정하여, LLM의 고질적인 심각도 인플레이션을 억제합니다
-  → [심각도 평가](references/severity-and-triage.md).
-- **의존성 건강 점검이 통합되어 있습니다.** SCA 도구가 감사 흐름의 일부로 실행되며, 도달 가능성이 확인되지 않은
-  CVE는 Info로만 표기하고 High/Critical로 부풀리지 않습니다.
-- **코드 패턴을 기계적으로 매칭합니다.** [패턴 트리거 테이블](references/pattern-triggers.md)이 코드 패턴을
-  취약점 점검으로 직접 연결해 주어, 원리에서 합성하는 과정 없이도 바로 확인이 가능합니다.
-- **한계에 대해 솔직합니다.** [한계 문서](references/limitations.md)가 정적/LLM 분석으로 *찾을 수 없는 것*을
-  명시하여, 클린 리포트가 "취약점이 없다"는 뜻이 아님을 분명히 합니다.
-
-## 감사 모드
-
-| 모드 | 용도 | 동작 |
-|---|---|---|
-| **quick** | 빠른 1차 스캔, CI 게이트, **소형 온디바이스 모델 (11B+)** | 각 leaf의 `## Mechanical scan` 섹션에서 grep 기반 기계적 스캔 실행. 고정 심각도, CVSS 미산출, 체이닝 분석 없음. 결과는 테이블 하나. |
-| **standard** | 기본값. 단일 타깃 전체 감사. | 프로파일 → 라우팅 → leaf 전체 분석 → PoC → 심각도 평가 (CVSS 4.0) → 리포트. |
-| **deep** | 정식 다중 도메인 정밀 감사. | Standard + 모든 보조 도메인 quick-check + 도메인 간 체이닝 ([chaining-and-impact.md](references/chaining-and-impact.md)). |
-
-**Quick 모드는 소형 온디바이스 모델에 최적화되어 있습니다** (예: Qwen 3 8B, Llama 3.1 8B). 이들 모델은
-기계적 지시를 따를 수 있지만 자유 추론은 어렵습니다. Quick 모드는 전적으로 패턴 매칭으로만 동작하여 원리
-합성, CVSS 계산, 체이닝 분석이 필요 없습니다. 로컬 모델로 보안 점검을 시작한다면 여기서 출발하세요.
-
-호출 시 모드를 지정합니다: *"quick 보안 감사 실행해 줘"*, *"이 저장소 deep 감사해 줘"*, 또는 보안 질문을 하면
-**standard**가 기본입니다.
 
 ## 의존성 CVE 점검
 
@@ -85,50 +140,6 @@ Step 1.5 해당 SCA 도구 실행:
 SCA 도구는 사용자 환경에 설치되어 있어야 합니다. `npm audit`은 Node 프로젝트에 기본 포함되지만,
 `pip-audit`, `trivy`, `govulncheck` 등은 별도 설치가 필요합니다. 도구가 없으면 해당 점검은
 건너뛰게 됩니다 — 이는 스킬이 아닌 환경의 제약입니다.
-
-## 설치
-
-Longinus는 Claude Code 스킬이며, `skills/` 디렉터리에 두면 Claude Code가 자동으로 인식합니다.
-
-```bash
-# 프로젝트 단위 — repo에 함께 커밋하여 팀과 공유
-git clone https://github.com/cpprhtn/Longinus.git .claude/skills/longinus
-
-# 개인 단위 — 내 모든 프로젝트에서 사용
-git clone https://github.com/cpprhtn/Longinus.git ~/.claude/skills/longinus
-```
-
-`SKILL.md`가 폴더 최상위에 있고 `references/`, `research/`가 그 옆에 있어야 하므로 **전체 트리를 그대로
-클론**하세요. 내부 링크가 상대경로라, 일부 파일만 복사하면 동작하지 않습니다.
-
-**옵션 — 멀티에이전트 레이어.** 스킬은 단독으로 동작합니다. 각 도메인을 **독립 컨텍스트**에서 병렬로 감사하고
-싶다면(도메인 간 편향 없음), 번들된 [서브에이전트](agents/README.md)를 Claude Code가 인식하는 위치로 복사한 뒤
-Claude Code를 재시작하세요:
-
-```bash
-# 개인 단위 — 모든 프로젝트에서 사용 (개인 스킬 설치 후)
-cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
-
-# 또는 프로젝트 단위 (스킬을 .claude/skills/longinus 로 클론한 경우)
-mkdir -p .claude/agents && cp .claude/skills/longinus/agents/*.md .claude/agents/
-```
-
-그다음 *"Longinus 감사 돌려줘"* 라고 하면 **오케스트레이터**가 전문가들을 지휘합니다.
-→ [agents/README.md](agents/README.md).
-
-## 사용
-
-설치 후에는 보안 관련 요청을 하거나 `/longinus`를 호출하면 됩니다.
-
-> "출시 전에 이 저장소를 점검해 줘." · "이 FastAPI API의 보안을 검토해 줘." · "이 React Native 앱도 확인해 줘."
-
-**스택을 가리지 않습니다.** Python/FastAPI, Node/Express, React Native, Go, Terraform/클라우드, LLM/RAG 앱
-등 — 타깃을 먼저 분석한 뒤 알맞은 플레이북으로 안내합니다. 다만 독립적으로 실행되는 자동 스캐너가 아니라, Claude가
-코드를 직접 검토하도록 이끄는 도구이며 기본 동작은 read-only입니다. 본인 소유가 아닌 대상을 테스트하기 전에는
-반드시 [인가 게이트](references/authorization-and-scope.md)를 확인하세요.
-
-> ⛔ **방어를 위한 공격입니다.** 내가 소유한 코드, 명시적으로 인가받은 타깃, CTF·실습 환경에서만 사용하세요.
-> 허가받지 않은 시스템에는 절대 사용하면 안 됩니다. [docs/ethics.md](docs/ethics.md)
 
 ## 문서
 
@@ -182,9 +193,24 @@ Longinus/
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.4.0
+
+- **Design-intent first(설계 의도 우선)** — 스캔 *전에* 프로젝트의 설계 의도(`CLAUDE.md`/README/ADR/
+  `SECURITY.md`/주석)를 읽어 **Intent Brief**(목적 · 설계된 신뢰 경계 · 명시된 가정 · 문서화된 수용 위험)를
+  만들고, 그 의도를 **위반하는** 입력 경로에 테스트를 집중. 발견은 의도와 대조: 문서화된 수용 위험 → Info(출처
+  인용); 의도와 모순 → 진짜/상향; *미문서화* 가정 → 여전히 결함. (`references/design-intent.md`)
+- **수정 트레이드오프** — 모든 수정을 **기존 → 수정안 → 트레이드오프**(변경 적용 시 성능/UX 비용)로 제시;
+  정보용 — 심각도가 *수정 여부*를 결정.
+- **보고서 파일 출력 + continuous/diff 모드** — 모든 검사가 `.longinus/reports/longinus_<ts>.md`를 작성;
+  재실행 시 직전 보고서 이후 `git diff`만 검사하고 델타 append (cron/CI 또는 `/schedule`로 구동).
+  (`references/continuous-audit.md`)
+- 오케스트레이터가 Intent Brief를 한 번 만들어 모든 전문가에게 전달.
+- **단일 캐노니컬 보고서 템플릿** (`references/report-template.md`) — 모든 검사가 *동일한* 고정 구조(8개 섹션
+  + machine-readable YAML 헤더)를 출력 → 사람·프로젝트 간 보고서 불일치 해결, 집계·비교 가능.
+
 ### v0.3.0
 
-- **옵션 멀티에이전트 레이어** (`agents/`) — Longinus 감사를 협업 팀으로 실행. **longinus-orchestrator**가
+- **옵션 멀티에이전트 레이어** (`agents/`) — Longinus 검사를 협업 팀으로 실행. **longinus-orchestrator**가
   프로파일 → 인가 게이트 → read-only 도메인 전문가 5명(`secrets`, `web`, `api-identity`, `cloud`, `ai`)을
   각자 **독립 컨텍스트**로 위임 → de-dup → 체이닝 → 트리아지 → 단일 랭킹 리포트. 세션 오염을 *구조적으로*
   해결(도메인 간 편향 없음)하고 전문가를 병렬 실행. `agents/*.md`를 `~/.claude/agents/`로 복사해 설치;
@@ -212,11 +238,11 @@ Longinus/
 
 ### v0.2.0
 
-- 세 가지 감사 모드: quick (grep 기반 기계적 스캔, 소형 온디바이스 모델 11B+) / standard / deep
+- 세 가지 검사 모드: quick (grep 기반 기계적 스캔, 소형 온디바이스 모델 11B+) / standard / deep
 - 필수 심각도 게이트 — Critical/High 판정이 기계적 체크리스트를 통과하지 못하면 강제 하향, LLM 심각도
   인플레이션 억제
-- 통합 의존성 건강 점검(SCA)을 감사 흐름의 Step 1.5로 추가; 도달 가능성 미확인 CVE는 Info로만 표기
-- 세션 오염 경고 및 감사 간 `/clear` 권장 사항 추가
+- 통합 의존성 건강 점검(SCA)을 검사 흐름의 Step 1.5로 추가; 도달 가능성 미확인 CVE는 Info로만 표기
+- 세션 오염 경고 및 검사 간 `/clear` 권장 사항 추가
 - 전 22개 도메인 leaf에 `## Mechanical scan` 섹션 추가 (소형 모델 호환)
 - `attacker-mindset.md`를 `pattern-triggers.md`로 통합 (토큰 최적화)
 - 도메인별 quick-check를 SKILL.md에서 각 도메인 README로 이동

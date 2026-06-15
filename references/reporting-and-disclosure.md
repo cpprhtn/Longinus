@@ -4,23 +4,30 @@ The report *is* the deliverable. A great bug poorly reported gets ignored; a cle
 gets fixed. Optimize for the reader: a developer who wants to know **what's broken, how bad, how to
 reproduce, and how to fix it** — in that order.
 
+> **⚠️ The report's shape is fixed — emit [report-template.md](report-template.md) verbatim.** Same
+> sections, same order, same per-finding fields, **every project and every run**, with its
+> machine-readable YAML header. *A free-form report is the #1 cause of inconsistency across people and
+> projects.* Everything below explains the **why** behind the template and the disclosure rules — the
+> template is the **what**.
+
 ---
 
 ## Report structure
 
-```
-1. Executive summary        ── 3–6 sentences: posture, # findings by severity, top risks, headline fix.
-2. Scope & methodology      ── what was tested, how, when; what was NOT tested (stated honestly).
-3. Prioritized fix list     ── the "do these first" table (Now / Soon / Eventually).
-4. Findings (detailed)      ── one section per confirmed finding, ordered by severity.
-4a. Dependency health       ── SCA results: confirmed-reachable CVEs + patch-anyway items (separate).
-5. Needs-validation         ── unconfirmed items, clearly separated.
-6. Appendix                 ── tooling, raw output, references, retest results.
-```
+The exact structure is **fixed in [report-template.md](report-template.md)** (§1 Executive summary · §2
+Design intent brief · §3 Prioritized fix list · §4 Findings · §5 Dependency health · §6 Needs-validation
+· §7 What was not tested · §8 Next run). Don't invent your own — **lead the reader with §1 and §3**;
+most act on those two and skim the rest.
 
-Lead with 1 and 3. Most readers act on those two and skim the rest.
+> **Output as a file.** Every audit writes this report to `.longinus/reports/longinus_YYYYMMDDHHMM.md`;
+> re-runs audit only the changed code and append a *delta* (new/fixed/regressed). The report header
+> records the audited commit SHA + the Intent Brief summary. See
+> [continuous-audit.md](continuous-audit.md) · [design-intent.md](design-intent.md).
 
-## Per-finding template
+## Per-finding fields — the *why*
+
+The canonical fields and their order are fixed in [report-template.md](report-template.md); fill
+**every** one. The block below illustrates *how* to fill them well (a worked example):
 
 ```markdown
 ### [SEVERITY] Title that names the bug and the impact
@@ -54,6 +61,11 @@ the full order table (~X records, incl. PII) with a single low-priv account, no 
 Plus the systemic fix (centralize authorization, add an object-ownership check in middleware) and a
 regression test that fails before / passes after.
 
+Structure the **Fix** as **Current → Proposed → Trade-off**: what the code/config does now, the change
+(prefer a diff), and the **trade-off of applying it** — added latency/throughput, UX friction (an extra
+step, a re-auth), or a compatibility/breaking-change risk (or "none"). *Informational: severity still
+rules — a Critical gets fixed regardless; the trade-off just informs how.*
+
 **References.** OWASP/CWE/cheat-sheet links.
 
 **Evidence.** Screenshot/log/response excerpt (redacted).
@@ -65,6 +77,9 @@ regression test that fails before / passes after.
 - **Reproducible by a stranger.** If a dev can't follow your steps without you, the report failed.
 - **Show impact, don't assert it.** "Could be serious" → demonstrate the data you could reach.
 - **Fix-forward.** Every finding ends in an actionable remediation; prefer the actual diff.
+- **Show the fix as current → proposed → trade-off.** Don't just give the new code — say what it
+  replaces and the perf/UX trade-off of applying it, so the owner can weigh *how* (severity decides
+  *whether*). Informational; never lowers severity.
 - **No fluff, no fear-mongering.** Calm, precise, factual. Don't inflate severity to seem impressive.
 - **Redact.** Never paste real secrets, tokens, or other users' PII into the report; mask them.
 - **Reproducibility metadata.** Note dates, versions/commit hashes, and environment — bugs are
@@ -92,11 +107,11 @@ not a ransom.
 
 ## Code-audit reporting (your own repo)
 
-For a self-audit the "report" can be lighter-weight and action-oriented:
-- a prioritized checklist / issue list (one issue per finding, labeled by severity),
-- the patch as a PR per fix where practical,
-- a short "what I tested / what I didn't" note so you know the coverage,
-- regression tests for the important ones so the bug can't silently return.
+A self-audit uses the **same** [report-template.md](report-template.md) — *do not switch to a lighter
+ad-hoc format* (that's how reports drift). You may keep it action-oriented within the template:
+- omit a non-applicable section by keeping its heading and writing `None` / `N/A`,
+- attach the patch as a PR per fix where practical,
+- add regression tests for the important findings so the bug can't silently return.
 
 ## Retest & closure
 

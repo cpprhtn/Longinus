@@ -56,6 +56,9 @@ is the *only* file you need to open for that signal.)
 | Build a specific impact chain — ATO · cloud takeover · RCE · mass exfil · AI-agent | [chaining-and-impact.md](chaining-and-impact.md) → [chaining/](chaining/account-takeover.md) |
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
 | Picking audit depth (quick/standard/deep), first-contact profiling, dependency/SCA check | [audit-modes.md](audit-modes.md) |
+| Understand the project's *design intent* first / "is this finding deliberate?" | [design-intent.md](design-intent.md) |
+| Emit a report file / scheduled or incremental (diff) re-audit using history | [continuous-audit.md](continuous-audit.md) |
+| Writing the report — the *one fixed shape* every audit must emit (consistency) | [report-template.md](report-template.md) |
 | Don't just fix it — *enforce* it (structural control + CI gate per category) | [enforce-forward.md](enforce-forward.md) |
 
 Don't see your exact signal? Three fallbacks: (1) the **principle-driven** entry —
@@ -69,6 +72,7 @@ Longinus
 │
 ├── ⛓️  SPINE (governance & lens — always applies)
 │   ├── authorization-and-scope.md ....... ⛔ authorization gate, rules of engagement, legal/ethics
+│   ├── design-intent.md ................ 🎯 read the design intent first → audit the gap (intent vs reality)
 │   ├── attacker-mindset.md .............. 🧠 → merged into pattern-triggers.md (redirect stub)
 │   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup + 6 generative principles
 │   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
@@ -79,7 +83,9 @@ Longinus
 │   │       (each: step-by-step real-world chain + 🛡️ defensive seal)
 │   ├── severity-and-triage.md ........... CVSS 4.0, de-dup, false-positive control, prioritization
 │   ├── enforce-forward.md ............... 🛡️ kill the bug class + gate the regression (per-category controls + templates/)
-│   └── reporting-and-disclosure.md ...... report + PoC templates, responsible disclosure
+│   ├── reporting-and-disclosure.md ...... report + PoC templates, responsible disclosure
+│   ├── continuous-audit.md ............. 🔁 report-file output + incremental (diff) re-audit + scheduling
+│   └── report-template.md .............. 📋 the ONE fixed report shape — emit verbatim (cross-project consistency)
 │
 ├── 🔭 recon/ ............................ ATTACK-SURFACE DISCOVERY  (dynamic targets + code inventory)
 │   ├── README.md ........................ when/how to recon; passive vs active; code-as-target

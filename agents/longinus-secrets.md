@@ -27,6 +27,8 @@ CVEs** (`references/limitations.md`). Verify every dependency actually exists (s
 immediate rotation + history scrub. A version-only CVE with no reachable call path = Info/"patch anyway",
 not High. Placeholders/test fixtures (`your-api-key-here`) are not findings.
 
+Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric.
+
 **Output → orchestrator:** list of `Type | File:line (or git ref) | Severity | Evidence | Fix + gate
 (gitleaks pre-commit / SCA gate / lockfile pin → references/templates/pre-commit-and-secrets.md) |
 Confirmed|Needs-Validation`. Note what you did not cover.

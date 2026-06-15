@@ -28,5 +28,7 @@ secrets in `.tf`/`tfvars`.
 Prove it or park it. **Two lenses:** name the missing control as **policy-as-code**
 (checkov/OPA-Conftest, IMDSv2 required → `references/templates/policy-as-code.md`).
 
+Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric.
+
 **Output → orchestrator:** `Type | File:line | Severity | Evidence | Fix + policy gate | Confirmed|
 Needs-Validation`. Flag the SSRF→IMDS→IAM→account-takeover chain if IMDSv1 + reachable SSRF coexist.

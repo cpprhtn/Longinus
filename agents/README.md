@@ -37,12 +37,12 @@ Restart the session (or run `/agents`) to load them. They **preload the `longinu
 
 | Agent | Role | Tools |
 |---|---|---|
-| **longinus-orchestrator** | gate → profile → dispatch → chain → triage → report | all (delegates) |
-| **longinus-secrets** | secrets & dependency/supply-chain (always runs first) | read-only + Bash |
-| **longinus-web** | OWASP Top 10:2025 web classes | read-only + Bash |
-| **longinus-api-identity** | API authz (BOLA/BFLA) + OAuth/JWT/SAML/MFA | read-only + Bash |
-| **longinus-cloud** | cloud / IaC / containers (CIS) | read-only + Bash |
-| **longinus-ai** | LLM/agent/RAG (prompt injection, agency, model supply chain) | read-only + Bash |
+| [**longinus-orchestrator**](longinus-orchestrator.md) | gate → profile → dispatch → chain → triage → report | all (delegates) |
+| [**longinus-secrets**](longinus-secrets.md) | secrets & dependency/supply-chain (always runs first) | read-only + Bash |
+| [**longinus-web**](longinus-web.md) | OWASP Top 10:2025 web classes | read-only + Bash |
+| [**longinus-api-identity**](longinus-api-identity.md) | API authz (BOLA/BFLA) + OAuth/JWT/SAML/MFA | read-only + Bash |
+| [**longinus-cloud**](longinus-cloud.md) | cloud / IaC / containers (CIS) | read-only + Bash |
+| [**longinus-ai**](longinus-ai.md) | LLM/agent/RAG (prompt injection, agency, model supply chain) | read-only + Bash |
 
 Specialists are **read-only on your code** (no Edit/Write) — they audit, they don't change things, by
 design. Each carries the Longinus discipline: ⛔ authorization gate · prove-it-or-park-it · two lenses.

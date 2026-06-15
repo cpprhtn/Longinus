@@ -26,6 +26,13 @@ The deliverable of this phase is a one-paragraph target model plus an **input→
 where untrusted data enters, where it lands (DB query, shell, file path, HTML, deserializer, LLM
 prompt, cloud API), and what's valuable behind it.
 
+**Read the design intent first.** Before scanning code, build an **Intent Brief** from the project's own
+docs (`CLAUDE.md`/README/ADRs/`SECURITY.md`/comments): purpose, *designed* trust boundaries, stated
+assumptions, and *documented* accepted-risks. Then aim testing at the input vectors that **violate or
+stress** that intent — and reconcile each finding against it (documented accepted-risk → downgrade+cite;
+contradicts intent → real, often higher; undocumented assumption → still a finding). See
+[design-intent.md](design-intent.md).
+
 ## 2. Recon / discovery
 - **Dynamic target:** enumerate the surface — see [recon/](recon/README.md). Subdomains, live hosts,
   ports/services, content/endpoints, parameters, JS-revealed routes, historical URLs, tech
@@ -75,8 +82,10 @@ impact, merge same-root-cause instances, rank ruthlessly. Separate confirmed fro
 Write it up per [reporting-and-disclosure.md](reporting-and-disclosure.md): executive summary,
 prioritized fix list, then per-finding detail with PoC and remediation. For code audits, propose the
 patch — and, beyond the per-instance patch, the **structural control + the CI/lint gate** that kills the
-class and prevents regression ([enforce-forward.md](enforce-forward.md)). For third-party targets,
-follow responsible disclosure.
+class and prevents regression ([enforce-forward.md](enforce-forward.md)). Show each fix as
+**current → proposed → trade-off** (the perf/UX cost of the change), per finding. For third-party targets, follow responsible disclosure.
+**Always write the report to a file** (`.longinus/reports/longinus_<ts>.md`); on a re-run, audit only
+the diff and append a delta ([continuous-audit.md](continuous-audit.md)).
 
 ## 9. Retest
 After fixes, re-run the specific PoCs to confirm closure and check for fix-bypasses (a blocklist that

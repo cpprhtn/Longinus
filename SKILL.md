@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill: it profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -108,7 +108,11 @@ this table — go to the **signal → exact-file jump table at the top of
 5. **Chain** — escalate every low/medium across a trust boundary; the *chained* impact is what you
    report. Patterns + discipline: [chaining-and-impact.md](references/chaining-and-impact.md).
 6. **Triage & report** — [severity-and-triage.md](references/severity-and-triage.md) →
-   [reporting-and-disclosure.md](references/reporting-and-disclosure.md).
+   **emit [report-template.md](references/report-template.md) verbatim** (one fixed shape + YAML header,
+   every project/run — see [reporting-and-disclosure.md](references/reporting-and-disclosure.md) for the
+   *why*). Show each fix as **current → proposed → trade-off** (perf/UX). **Write it to a file**
+   (`.longinus/reports/`);
+   re-runs audit only the diff ([continuous-audit.md](references/continuous-audit.md)).
 
 Full detail (only if you need it): [references/methodology.md](references/methodology.md).
 
@@ -131,6 +135,9 @@ lookup is **[references/pattern-triggers.md](references/pattern-triggers.md)**.
   [pattern-triggers.md](references/pattern-triggers.md)) **and** the *defender lens* (what control must
   be there — [enforce-forward.md](references/enforce-forward.md)); the flaw is the gap between them.
   **Offense drives, defense seals.**
+- **Audit the gap, not the whole codebase** — read the **design intent** first
+  ([design-intent.md](references/design-intent.md)), then hunt where the implementation diverges from
+  it. Reconcile each finding against *documented* decisions — intent gives context, never absolution.
 - **Think in principles, report in chains** — derive bugs from the six generative principles
   ([pattern-triggers.md](references/pattern-triggers.md)); rate them by *chained* impact
   ([chaining-and-impact.md](references/chaining-and-impact.md)), never in isolation.

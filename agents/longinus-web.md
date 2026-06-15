@@ -26,6 +26,8 @@ auto-escaping, parameterized queries, dead/test code). **Two lenses:** for each 
 control it exploits (e.g. no central output-encoder / no input schema → `references/enforce-forward.md`).
 Non-destructive: canary/benign payloads only.
 
+Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric.
+
 **Output → orchestrator:** list of `Type | File:line | Severity (provisional) | PoC/repro | Fix +
 enforcement gate | Confirmed|Needs-Validation`. Note coverage gaps. Flag anything that could chain
 (SSRF→cloud, self-XSS→ATO) for the orchestrator's chaining pass.
