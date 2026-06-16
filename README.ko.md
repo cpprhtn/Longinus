@@ -201,6 +201,15 @@ Longinus/
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.5.1
+
+- **보고서가 독자의 언어로 작성** — 감사가 산문(요약·발견·수정·제목)을 **사용자가 질문한 언어**로 씁니다(한글
+  요청 → 한글 보고서). 단 YAML 헤더·severity 단어·CWE/CVSS id는 정전 영어로 유지해 fleet 전반에서 집계
+  가능합니다 (`references/report-template.md` 규칙 8).
+- **Fix list: `Priority` → `Effort`** — §3 fix list에서 규범적인 "Now/Soon" 컬럼을 제거하고(수정 *시점*은
+  감사자가 아니라 팀의 몫) 대신 **Effort**(S/M/L)를 넣어 quick win부터 순서를 잡게 했습니다. 행은 발견 F-ID를
+  참조합니다.
+
 ### v0.5.0
 
 - **양방향 방법론을 실제로 구현** — *두 렌즈, 하나의 결함*이 각주가 아니라 진짜 **차집합**이 되었습니다. **Blue**

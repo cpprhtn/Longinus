@@ -208,6 +208,16 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.5.1
+
+- **Report speaks the reader's language** — the audit writes its prose (summary, findings, fixes,
+  headings) in the **language the user asked in** (a Korean request → a Korean report), while the YAML
+  header, severity words, and CWE/CVSS ids stay canonical English so reports still aggregate across a
+  fleet (`references/report-template.md` rule 8).
+- **Fix list: `Priority` → `Effort`** — the §3 fix list drops the prescriptive "do this Now/Soon" column
+  (the remediation timeline is the team's call, not the auditor's) and adds an **Effort** (S/M/L)
+  annotation instead, so you can sequence quick wins first. Rows now reference the finding F-IDs.
+
 ### v0.5.0
 
 - **Bidirectional method, made real** — *two lenses, one flaw* is now an actual **diff**, not a footnote.

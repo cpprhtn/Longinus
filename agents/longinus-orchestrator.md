@@ -43,7 +43,10 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
    separate; rule out the LLM-auditor failure modes (hallucinated CVE, sink-without-source, etc.).
 7. **Report.** **Emit `references/report-template.md` verbatim** — the one fixed shape (8 sections + a
    machine-readable YAML header) used for *every* project and run, so reports stay consistent and
-   aggregatable. One ranked deliverable: executive summary → prioritized fix list → per-finding detail.
+   aggregatable. **Write the human prose in the language the user asked in** (Korean request → Korean
+   report); keep the YAML header, severity enum words, CWE/CVSS ids, and `Status`/`Effort` labels in
+   English. The §3 fix list is ordered by severity + an **Effort** (S/M/L) annotation — *not* a
+   prescriptive "do this now" (the remediation timeline is the team's call). One ranked deliverable: executive summary → prioritized fix list → per-finding detail.
    Each finding = severity (CVSS 4.0) · exact `file:line`/endpoint · reproducible PoC · impact · the
    immediate fix **and** the structural control + CI gate that kills the class
    (`references/enforce-forward.md`); write each **Fix as Current → Proposed → Trade-off** (perf/UX cost

@@ -11,10 +11,12 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 > 1. **Copy the skeleton verbatim** — don't rename, reorder, merge, split, or "lighten" sections.
 > 2. **Never drop a section** — if N/A, keep the heading and write `None` / `N/A`.
 > 3. **Severity is always a badge + word:** 🔴 `Critical` · 🟠 `High` · 🟡 `Medium` · 🔵 `Low` ·
->    ⚪ `Informational` · ❓ `Needs-validation`. Use these exact words.
+>    ⚪ `Informational` · ❓ `Needs-validation`. Use these exact **English** words *even in a localized
+>    report* — they are the canonical enum the dashboard and `counts` aggregate on.
 > 4. **Top dashboard is mandatory** (overall-risk line + the counts table) — it's the human at-a-glance.
 > 5. **Findings get stable IDs** `F1, F2, …` (so re-runs track the same finding over time), ordered by
->    severity (highest first), each with a one-line **Impact** TL;DR.
+>    severity (highest first), each with a one-line **Impact** TL;DR. The §3 Fix list references these
+>    same F-IDs (not a separate counter) so the reader can jump fix → finding.
 > 6. **§4 Findings = Confirmed only. §6 = Needs-validation.** Never blur the two. Fill *every* field
 >    (use `n/a`, never delete one). **Status carries the evidence tier:** `✅ Confirmed (executed)` (you
 >    ran a benign PoC) · `✅ Confirmed (traced)` (proved the source→sink path, not run) ·
@@ -23,7 +25,12 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 > 7. **Coverage is mandatory and honest** — the `coverage:` header + the dashboard line state how much of
 >    the attack surface was examined. A clean report at 40% coverage is an honest 40%, **not** "all clear"
 >    ([audit-ledger.md](audit-ledger.md)). The `surface[]`/`controls[]` ledger rides in the YAML header.
-> 8. Write the file to `.longinus/reports/longinus_<UTC>.md` ([continuous-audit.md](continuous-audit.md)).
+> 8. **Match the request's language.** Write all human prose — summary, finding titles/descriptions,
+>    fixes, recommendations, and the section headings — in the **language the user asked in** (a Korean
+>    request → a Korean report). Keep the **YAML header, the severity enum words (rule 3), CWE/OWASP/CVSS
+>    ids, and the `Status`/`Effort` labels canonical English** so reports stay machine-aggregatable and
+>    diffable across languages.
+> 9. Write the file to `.longinus/reports/longinus_<UTC>.md` ([continuous-audit.md](continuous-audit.md)).
 
 ---
 
@@ -61,10 +68,15 @@ coverage: { examined: 0, total: 0, pct: 0 }   # examined sinks / enumerated sink
 - **Stated assumptions:** <"client can't change X", "internal-only", …>
 - **Documented accepted-risks:** <cited, or "none found">
 
-## 3. Fix list (do these first)
-| # | Severity | Finding | Priority |
+## 3. Fix list
+> Ordered by severity. *Effort* lets you sequence quick wins first; **when** to fix is your team's call,
+> not the auditor's — the report rates risk, not your roadmap.
+
+| F# | Severity | Finding | Effort |
 |:-:|:-:|---|:-:|
-| 1 | 🔵 Low | <title> | Soon |
+| F1 | 🔵 Low | <title> | S |
+
+*Effort: **S** = a line/config · **M** = one module/component · **L** = re-architecture. Severity = how bad it is; Effort = how cheap to fix.*
 
 ## 4. Findings
 <one block per CONFIRMED finding, highest severity first>

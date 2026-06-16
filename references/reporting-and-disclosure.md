@@ -15,7 +15,7 @@ reproduce, and how to fix it** — in that order.
 ## Report structure
 
 The exact structure is **fixed in [report-template.md](report-template.md)** (§1 Executive summary · §2
-Design intent brief · §3 Prioritized fix list · §4 Findings · §5 Dependency health · §6 Needs-validation
+Design intent brief · §3 Fix list (severity + effort) · §4 Findings · §5 Dependency health · §6 Needs-validation
 · §7 What was not tested · §8 Next run). Don't invent your own — **lead the reader with §1 and §3**;
 most act on those two and skim the rest.
 
@@ -23,6 +23,12 @@ most act on those two and skim the rest.
 > re-runs audit only the changed code and append a *delta* (new/fixed/regressed). The report header
 > records the audited commit SHA + the Intent Brief summary. See
 > [continuous-audit.md](continuous-audit.md) · [design-intent.md](design-intent.md).
+
+> **Write in the reader's language.** A report nobody reads is wasted work, so write the human prose in
+> the **language the user asked in** (a Korean request → a Korean report). The *machine* layer stays
+> constant across languages — keep the **YAML header, the severity enum words, CWE/OWASP/CVSS ids, and the
+> `Status`/`Effort` labels in English** so a fleet of reports still aggregates and diffs. (Rule 8 in
+> [report-template.md](report-template.md).)
 
 ## Per-finding fields — the *why*
 

@@ -147,14 +147,18 @@ Each fix is shown as **current → proposed → trade-off** — the perf/UX cost
 change ([reporting-and-disclosure.md](reporting-and-disclosure.md)). The trade-off **never lowers
 severity**: Critical/High get fixed regardless; it only informs *how* to fix, not *whether*.
 
-## Prioritize the fix list
+## Prioritize the fix list (two axes — and stay in your lane)
 
-Order by `severity` then `effort` (quick critical wins first), and flag:
-- **Now / blocker** — exploitable, high impact, reachable. Don't ship until fixed.
-- **Soon** — real but lower impact or harder to reach.
-- **Eventually / hardening** — defense-in-depth, missing headers, informational.
+Order the fix list by **severity** (how bad), and annotate each with **effort** (how cheap to fix:
+**S** = a line/config · **M** = one module · **L** = re-architecture). Those two let the reader *sequence*
+— a one-line Critical and a trivial quick-win go before a hard High of the same-or-lower severity.
 
-A founder will act on a 5-item "fix these before launch" list and bounce off a 200-row CSV. Curate.
+> **Rate risk, not their roadmap.** *When* to fix (the remediation SLA) is the owning team's + vuln-
+> management's call, driven by policy and business context (compensating controls, risk acceptance), not
+> something the auditor stamps per finding. So the report carries **severity + effort**, *not* a
+> prescriptive "do this Now" — surfacing a timeline as a mandate is overstepping.
+
+A founder acts on a curated 5-item list and bounces off a 200-row CSV. Curate; lead with the chain.
 
 ## Triage card
 
@@ -166,7 +170,7 @@ For each candidate finding:
        │
   same root cause as an existing finding?  ── yes ──► merge as another instance
        │ no
-  assign: CWE + OWASP mapping + CVSS 4.0 vector + fix-priority (Now/Soon/Eventually)
+  assign: CWE + OWASP mapping + CVSS 4.0 vector + fix-effort (S/M/L)
        │
   if Critical or High: run the mandatory severity gate checklist (above)
        │                if any condition fails ──► downgrade one level, state why
