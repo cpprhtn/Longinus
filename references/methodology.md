@@ -22,9 +22,12 @@ Characterize the target precisely (see SKILL.md Step 1): form factor, stack, tru
 jewels. Write down the **in-scope** and **out-of-scope** lists. For a repo, inventory languages,
 frameworks, entry points, datastores, and dependencies from the manifests.
 
-The deliverable of this phase is a one-paragraph target model plus an **input→sink→asset** sketch:
-where untrusted data enters, where it lands (DB query, shell, file path, HTML, deserializer, LLM
-prompt, cloud API), and what's valuable behind it.
+The deliverable of this phase is a one-paragraph target model plus the **surface ledger** — the
+`input→sink→asset` enumeration as data ([audit-ledger.md](audit-ledger.md)): where untrusted data enters,
+where it lands (DB query, shell, file path, HTML, deserializer, LLM prompt, cloud API), and what's
+valuable behind it. The ledger is what makes **coverage measurable** (examined / total sinks) — the
+recall counterpart to the precision firewall — and it is the shared surface the
+[red×blue diff](red-blue.md) is computed on.
 
 **Read the design intent first.** Before scanning code, build an **Intent Brief** from the project's own
 docs (`CLAUDE.md`/README/ADRs/`SECURITY.md`/comments): purpose, *designed* trust boundaries, stated
@@ -59,14 +62,22 @@ cases. Discipline:
 - **Authenticated and unauthenticated** passes — and across roles (horizontal & vertical).
 - **Default non-destructive:** canary values, OOB callbacks, read-only proofs (see the gate).
 
-## 5. Confirm (prove it or park it)
-A suspicion is not a finding. Confirm with a **minimal, reproducible PoC**:
-- exact request/input that triggers it, the observed vs expected behavior, and a marker proving cause;
-- for blind bugs, an out-of-band signal (DNS/HTTP callback to a collaborator you control);
-- for code findings, the tainted path from source to sink, ideally a failing test.
+## 5. Confirm (prove it or park it — run it where you can)
+A suspicion is not a finding. Confirm on a **confirmation ladder** — and on a target you own/control,
+**climb to "executed"** rather than settling for "looks exploitable"
+([proof-and-confirmation.md](proof-and-confirmation.md)):
+- **Executed** (strongest) — run a *benign* PoC and observe the effect (canary echoed, the row returned,
+  the OOB callback hit). The agent has `Bash`; use it on owned/local/lab code. Bounded by the
+  [authorization gate](authorization-and-scope.md): on an authorized *live* target, prove **reachability
+  only** and stop; on an unauthorized one, don't run anything.
+- **Traced** — the tainted path source→sink proven by reading code (a failing test, the annotated path)
+  when execution is genuinely infeasible (no instance/DB/secrets); **say so**.
+- **Needs-validation** — neither run nor fully traced.
 
-Anything you can't confirm goes to a separate **"needs validation"** list — never reported as fact.
-This is the discipline that makes Longinus output trustworthy instead of scanner noise.
+Use benign markers (`LONGINUS_CANARY_<id>`), read-only proofs, a *local* instance, scratch files outside
+the repo — never destructive payloads or production. **Never claim "executed" for a PoC you didn't run**
+(the invented-PoC trap). Anything you can't confirm goes to a separate **"needs validation"** list — never
+reported as fact. This is the discipline that makes Longinus output trustworthy instead of scanner noise.
 
 ## 6. Chain
 Combine issues — real impact is usually a chain (open-redirect + OAuth → token theft; SSRF + cloud

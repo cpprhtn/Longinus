@@ -18,7 +18,7 @@ vulnerabilities found" when the truth is "this class wasn't reachable."
 | 6 | **Cryptographic implementation flaws** | Can flag *known weak patterns* (ECB mode, short keys, predictable IV) but cannot perform actual cryptanalysis |
 | 7 | **Side-channel attacks** | Timing, cache, power analysis — not detectable from source code alone |
 | 8 | **Social engineering / phishing** | Out of scope entirely |
-| 9 | **Reachability of a code path under production conditions** | Can find the vulnerable *code* but may not prove it's reachable from production input without runtime tracing |
+| 9 | **Reachability of a code path under production conditions** | Can find the vulnerable *code* but may not prove it's reachable from production input without runtime tracing. **Mitigations:** (a) run a static-analysis taint oracle (Semgrep/CodeQL/Joern) in the [surface sweep](audit-modes.md) — it raises reachability confidence and fills the [ledger](audit-ledger.md); (b) on owned/local code, **actually execute a benign PoC** ([proof-and-confirmation.md](proof-and-confirmation.md)) to settle it. What neither resolves is recorded as `reachable: unknown` / `Confirmed (traced)` (a disclosed gap), never a confident invented finding |
 
 ## Reduced confidence (flag but caveat)
 

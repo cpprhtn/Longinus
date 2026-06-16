@@ -89,6 +89,16 @@ force is **MANDATORY** — the gate is not optional, even when "it feels Critica
 - **Distinct root cause → distinct finding**, even if symptoms look alike.
 - Prefer reporting the **root cause** over each symptom — it's the fix that matters.
 
+## Precision and recall are orthogonal (don't let one bend the other)
+
+This firewall is the **precision** axis (*are you sure of what you filed?*). Its twin is **recall**
+(*did you even look?*), instrumented by the [Audit Ledger](audit-ledger.md)'s `surface[]` coverage. They
+are independent: enumerating every sink (recall) **does not** lower the bar for confirming one
+(precision). A `surface` row marked `not-examined` or `reachable: unknown` is an honest **coverage gap to
+disclose** (§7 of the report) — never a reason to inflate a guess into a finding. Raise coverage by
+*looking harder*; keep precision by *proving harder* — neither may silently trade the other away
+([audit-ledger.md](audit-ledger.md)).
+
 ## Confirmed vs unconfirmed (the trust firewall)
 
 Maintain two buckets and never blur them:
@@ -108,7 +118,7 @@ validation" bucket, rule out these specific traps:
 | **Hallucinated bug/CVE** | asserting a vuln (or a CVE id/detail) from a pattern or memory | cite the **exact file:line** and the concrete behavior; never a remembered "this is usually vulnerable" |
 | **Sink without a source** | flagging `exec`/`query`/`innerHTML` without showing attacker input reaches it | trace the **source→sink path**; no reachable taint ⇒ "needs validation," not a finding |
 | **Guarded / dead / unreachable** | a real bug behind an auth check, feature flag, or dead code | prove reachability for the intended attacker role, or downgrade |
-| **Invented PoC** | a plausible-looking exploit that was never run | actually execute it; if you can't (no instance, no auth), label it unproven — don't imply you did |
+| **Invented PoC** | a plausible-looking exploit that was never run | actually execute it on owned/local code ([proof-and-confirmation.md](proof-and-confirmation.md)); if you can't (no instance, no auth), label it `Confirmed (traced)` or unproven — don't imply you did |
 | **Version-only dependency CVE** | "lib X\@1.2 has CVE-Y" with no call-path check | confirm the vulnerable function is **reached**, else mark Info/"patch anyway" |
 | **Confidence laundering** | hedged uncertainty written in assertive prose | state confidence explicitly; keep the two buckets visibly separate |
 

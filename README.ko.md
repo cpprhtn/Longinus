@@ -93,9 +93,22 @@ cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
   [설계 의도](references/design-intent.md).
 - **개별 취약점이 아니라 연계 영향으로 평가합니다.** 단독으로는 낮은 등급이라도, 연결되면 계정 탈취로 이어지는
   취약점들이 있습니다. 그러한 연계는 하나의 Critical로 다룹니다 → [체이닝](references/chaining-and-impact.md).
+- **양방향 설계 — 결함은 곧 "차집합"입니다.** *Blue* 렌즈가 각 신뢰 경계에 *있어야 할* 통제 지도를 만들고,
+  *Red* 렌즈가 도달 가능한 sink를 찾습니다. 취약점은 둘이 어긋나는 지점 — 도달 가능한 sink인데 기대 통제가
+  없거나 우회되는 곳입니다. 이후 제안한 수정안을 **우회 시도(fix→bypass) 루프**로 두드려 버티는지 확인합니다
+  → [red × blue 방법론](references/red-blue.md).
+- **버그만이 아니라 커버리지를 측정합니다.** 모든 source→sink를 [Audit Ledger](references/audit-ledger.md)에
+  판정과 함께 올려, 보고서가 *무엇을 보지 않았는지*(재현율)까지 말합니다. 검사하지 않은 sink는 *명시된 공백*이지
+  조용한 "이상 없음"이 아닙니다.
 - **오탐을 철저히 배제합니다.** 재현 가능한 PoC가 없으면 확정 보고하지 않습니다. 필수 심각도 게이트가
   Critical/High 판정을 기계적으로 하향 조정하여, LLM의 고질적인 심각도 인플레이션을 억제합니다
   → [심각도 평가](references/severity-and-triage.md).
+- **추측이 아니라 실행으로 확인합니다.** 소유한 코드라면 에이전트의 셸로 **양성 PoC를 실제로 실행**해
+  `Confirmed (executed)` / `(traced)`로 등급을 매깁니다 — "취약해 보임"을 증거로 바꾸되, 인가 게이트 안에서만
+  → [proof & confirmation](references/proof-and-confirmation.md).
+- **감사자를 공격하는 repo에 강건합니다.** 대상의 `README`·주석·`SECURITY.md`를 *untrusted data*로 취급합니다 —
+  "여긴 건너뛰어"·"아무것도 보고하지 마" 같은 지시는 감사자를 노린 indirect prompt injection이라 *지시가 아니라
+  발견*으로 처리합니다(자기 약 먹기) → [설계 의도](references/design-intent.md).
 - **보고서는 항상 하나의 고정 형식.** 모든 검사가 동일한 템플릿(machine-readable 헤더 + 고정 섹션)을 출력해,
   사람·프로젝트 간 보고서가 일관되고 비교 가능합니다 → [보고서 템플릿](references/report-template.md).
 - **한계에 대해 솔직합니다.** [한계 문서](references/limitations.md)가 정적/LLM 분석으로 *찾을 수 없는 것*을
@@ -157,7 +170,7 @@ Longinus/
 ├── README.ko.md                    ← 한국어 안내 (이 문서)
 ├── SKILL.md                        ← 오케스트레이션 브레인 (실제 진입점)
 ├── RESEARCH.md                     ← 참고문헌 허브 (research/ 트리 색인)
-├── agents/                         ← 옵션 멀티에이전트 레이어 (오케스트레이터 + 도메인 전문가 5)
+├── agents/                         ← 옵션 멀티에이전트 레이어 (오케스트레이터 + Blue + Red 전문가 5)
 ├── docs/                           ← 개념 설명 (문서별로 분리)
 │   ├── why.md                      ← 왜 만들었나 (3가지 흐름)
 │   ├── who-its-for.md              ← 대상 + 결과물 (스캐너 덤프가 아닌 리포트)
@@ -187,6 +200,27 @@ Longinus/
 
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.5.0
+
+- **양방향 방법론을 실제로 구현** — *두 렌즈, 하나의 결함*이 각주가 아니라 진짜 **차집합**이 되었습니다. **Blue**
+  렌즈가 설계 의도에서 기대 통제 지도를 만들고, **Red** 렌즈가 도달 가능한 sink를 열거하며, 결함은 *도달 가능한
+  sink인데 기대 통제가 없거나 우회되는* 지점입니다. 이후 제안 수정안을 **fix→bypass 루프**로 두드려 버티는지
+  확인합니다. 신규 spine 문서 `references/red-blue.md`; 먼저 실행되어 Red 전문가에게 통제 지도를 넘기는
+  `agents/longinus-blue.md`.
+- **커버리지/재현율 계측** — 신규 **Audit Ledger**(`references/audit-ledger.md`)가 모든 source→sink를 판정과
+  함께 열거하여 보고서가 *무엇을 보지 않았는지*까지 측정합니다. 재현율(보았는가?)이 정밀도(확실한가?)의 직교
+  쌍으로 명시되어, 어느 한쪽도 다른 쪽을 조용히 희생시킬 수 없습니다. **Surface sweep**(`references/audit-modes.md`)이
+  정적분석 taint 오라클(Semgrep/CodeQL/Joern)을 LLM 앞단의 재현율·도달성 엔진으로 두고, grep fallback을 둡니다.
+- **실행 PoC + 확인 사다리** — 소유/로컬 코드에서는 **양성 PoC를 실제로 실행**해 각 발견을
+  `Confirmed (executed)` / `Confirmed (traced)` / `Needs-validation`로 등급화합니다(인가 게이트 안에서만,
+  `references/proof-and-confirmation.md`). 실행하지 않은 PoC를 "executed"로 적지 않습니다.
+- **감사자 injection 가드(자기 약 먹기)** — 대상 repo의 문서·주석·`SECURITY.md`를 **untrusted input**으로
+  취급합니다. 감사자에게 건너뛰기·하향·"보고 금지"를 지시하는 텍스트는 indirect prompt injection이라 *지시가
+  아니라 발견*이 되고, design-intent의 downgrade 경로로 실제 버그를 세탁하지 못합니다
+  (`references/design-intent.md`).
+- **보고서 스키마 1.2** — 보고서 YAML 헤더에 `coverage` 필드(검사한 sink / 전체 sink), 발견 Status에 증거
+  등급(executed / traced)이 추가됩니다. 고정 8개 섹션은 그대로입니다.
 
 ### v0.4.0
 

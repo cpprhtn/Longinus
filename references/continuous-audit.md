@@ -16,7 +16,7 @@ End **every** audit by writing the report to:
   control). The path is configurable; keep it stable so re-runs can find prior reports.
 - **Content** = [report-template.md](report-template.md) emitted **verbatim** — its fixed 8 sections
   plus the machine-readable **YAML header** (target · commit SHA · date · mode · scope · `overall_risk`
-  · severity `counts`). Same shape every project and run, so reports aggregate and diff across a fleet.
+  · severity `counts` · `coverage`). Same shape every project and run, so reports aggregate and diff across a fleet.
   The *why* behind each field is in [reporting-and-disclosure.md](reporting-and-disclosure.md).
 - **Mandatory:** an audit with no report file is *incomplete*. In headless/CI runs, the LLM may skip the
   write — so state it explicitly in the prompt (*"write the report to `.longinus/reports/`"*) to make

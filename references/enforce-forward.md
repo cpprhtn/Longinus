@@ -4,6 +4,11 @@
 > attack ([pattern-triggers.md](pattern-triggers.md)) reached a sink and a control was missing or
 > bypassable ([chaining-and-impact.md](chaining-and-impact.md)). Enforcement is how you *seal* what the
 > attack exposed; it is not a checklist run on its own.
+>
+> **Two entry points, same matrix:** (1) *after* a finding — the gate that seals it (the primary use); and
+> (2) *up front* — **Blue** consults the per-category matrix below as a **catalog of expected controls** to
+> build the control-map it diffs Red against ([red-blue.md](red-blue.md)). That up-front read is a
+> *reference*, still offense-led (the finding is the diff) — not this doc run as a standalone checklist.
 
 A finding does **not** end at a one-line patch. It ends at **(1)** the *structural control* that makes
 the whole class impossible, and **(2)** the *enforcement gate* that keeps it that way. The deliverable

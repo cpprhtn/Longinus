@@ -98,9 +98,23 @@ Not just another playbook pack:
 - **Rates findings by chained impact, not in isolation.** Issues that are individually "low" can
   compose into account takeover; that chain is treated as one **Critical** →
   [chaining](references/chaining-and-impact.md).
+- **Bidirectional by design — the finding is a diff.** A *Blue* lens maps the controls that *should*
+  guard each trust boundary; a *Red* lens finds the reachable sinks; a vulnerability is where they
+  disagree — then the proposed fix is attacked until it can't be bypassed →
+  [red × blue method](references/red-blue.md).
+- **Measures coverage, not just bugs.** Every source→sink goes into an [Audit Ledger](references/audit-ledger.md)
+  with a verdict, so the report states *what was not looked at* (recall) — an un-examined sink is a
+  disclosed gap, never a silent "all clear."
 - **Ruthlessly suppresses false positives.** No reproducible PoC, no confirmed finding. Mandatory
   severity gates force Critical/High findings *down* when preconditions aren't met — an LLM's weakest
   point is severity inflation → [severity & triage](references/severity-and-triage.md).
+- **Confirms by running it, not guessing.** On code you own, it uses the agent's shell to **execute a
+  benign PoC** and label the finding `Confirmed (executed)` vs `(traced)` — turning "looks exploitable"
+  into proof, bounded by the authorization gate → [proof & confirmation](references/proof-and-confirmation.md).
+- **Hardened against a repo that attacks the auditor.** The target's own `README`/comments/`SECURITY.md`
+  are *untrusted data* — text telling the auditor to "skip this" or "report nothing" is indirect prompt
+  injection, so it becomes a finding, never an instruction (it eats its own dog food) →
+  [design-intent](references/design-intent.md).
 - **One fixed report shape, every time.** Every audit emits the same template (machine-readable header +
   fixed sections) so reports are consistent and comparable across projects →
   [report template](references/report-template.md).
@@ -163,7 +177,7 @@ Longinus/
 ├── README.ko.md                    ← Korean landing
 ├── SKILL.md                        ← the orchestration brain (the entry point)
 ├── RESEARCH.md                     ← bibliography hub (indexes the research/ tree)
-├── agents/                         ← OPTIONAL multi-agent layer (orchestrator + 5 domain specialists)
+├── agents/                         ← OPTIONAL multi-agent layer (orchestrator + Blue + 5 Red specialists)
 ├── docs/                           ← the concept, split into linked docs
 │   ├── why.md                      ← why this exists (the 3 trends)
 │   ├── who-its-for.md              ← audiences + what you get (a report, not a scanner dump)
@@ -193,6 +207,29 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
+
+### v0.5.0
+
+- **Bidirectional method, made real** — *two lenses, one flaw* is now an actual **diff**, not a footnote.
+  A **Blue** lens builds the expected-control map from the design intent; a **Red** lens enumerates
+  reachable sinks; a finding is a reachable sink whose expected control is missing or bypassed — then the
+  proposed fix is attacked in a **fix→bypass loop** until it holds. New spine doc
+  `references/red-blue.md`; new `agents/longinus-blue.md` runs first and feeds the Red specialists.
+- **Coverage / recall instrument** — the new **Audit Ledger** (`references/audit-ledger.md`) enumerates
+  every source→sink with a verdict, so the report measures *what was not looked at*. Recall (did you
+  look?) is now the explicit, orthogonal twin of precision (are you sure?) — neither can silently trade
+  the other away. A **surface sweep** (`references/audit-modes.md`) puts a static-analysis taint oracle
+  (Semgrep/CodeQL/Joern) in front of the LLM as the recall + reachability engine, with a grep fallback.
+- **Executable proof + confirmation ladder** — on owned/local code the audit **runs a benign PoC** and
+  tiers each finding `Confirmed (executed)` / `Confirmed (traced)` / `Needs-validation`, bounded by the
+  authorization gate (`references/proof-and-confirmation.md`); never claims "executed" for a PoC it didn't
+  run.
+- **Auditor injection guard (eats its own dog food)** — the target repo's docs/comments/`SECURITY.md` are
+  treated as **untrusted input**; text that tells the auditor to skip, downgrade, or "report nothing" is
+  indirect prompt injection and becomes a finding, never an instruction, and can't launder a real bug via
+  the design-intent downgrade path (`references/design-intent.md`).
+- **Report schema 1.2** — the report YAML header gains a `coverage` field (examined / total sinks), and a
+  finding's Status carries its evidence tier (executed / traced); the 8 fixed sections are unchanged.
 
 ### v0.4.0
 

@@ -14,7 +14,7 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 
 | Mode | When to use | What to read | What to skip |
 |---|---|---|---|
-| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | route → the `## Mechanical scan` section at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring. Use the fixed severities from the mechanical scan. |
+| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | route → the `## Mechanical scan` section at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring — **and the standard+ disciplines: the surface/control ledger + red/blue control-map ([red-blue.md](red-blue.md)), executable PoC ([proof-and-confirmation.md](proof-and-confirmation.md))**. Use the fixed severities; results are provisional. |
 | **standard** | Default. Full audit for one target. | route → leaf (full) → spine docs as needed. | Domains not relevant to this target. |
 | **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS chaining-and-impact.md, all relevant domain `Mechanical scan`s, cross-domain pivot analysis. | Nothing — full coverage. |
 | **continuous / diff** | scheduled / CI re-runs on a watched project | only the **diff since the last report** (`git diff <prior-sha>..HEAD`) + a re-check of prior open findings | unchanged code — audit only what changed, append a delta ([continuous-audit.md](continuous-audit.md)) |
@@ -28,8 +28,12 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 5. In each leaf/branch, read ONLY the `## Mechanical scan` section.
 6. Execute each numbered STEP (grep), apply the SKIP conditions, and report any remaining match using
    the fixed severity and the leaf's quick-mode output template.
-7. Do NOT perform CVSS scoring, chaining analysis, or principle-driven reasoning.
-8. Report as a single table: `File:Line | Type | Severity (fixed) | Pattern matched | Fix`.
+7. Do NOT perform CVSS scoring, chaining analysis, principle-driven reasoning, the red/blue control-map,
+   or executable PoCs — those are **standard+** disciplines.
+8. Report as a single table: `File:Line | Type | Severity (fixed) | Pattern matched | Fix`. This **provisional
+   table is quick mode's deliverable** — not the full [report-template.md](report-template.md) (that is the
+   standard/deep output). Every quick-mode row is effectively **Needs-validation**; a `standard` re-run is
+   what confirms it (executed/traced) and assigns a real severity.
 
 > ⚠️ **Quick-mode severities are provisional.** The fixed per-pattern severities skip the reachability,
 > CVSS, and chaining checks that prevent inflation ([severity-and-triage.md](severity-and-triage.md)
@@ -39,7 +43,8 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 
 ### Standard mode instructions
 
-Default. Profile → route → leaf (full) → PoC → triage → report. See "The loop" in [SKILL.md](../SKILL.md).
+Default. Profile → **surface sweep (build the ledger)** → route → leaf (full) → PoC → triage → report.
+See "The loop" in [SKILL.md](../SKILL.md) and the surface sweep below.
 
 ### Deep mode instructions
 
@@ -119,22 +124,48 @@ application-level findings. Full SCA playbook:
 | `*.tf` / `*.yaml` (k8s) / `Dockerfile` only | **Cloud/IaC** | `cloud-and-infra/` branch |
 | `AndroidManifest.xml` / `*.xcodeproj` / `*.swift` / `*.kt` | **Mobile** | `mobile/` branch |
 
-### Step 3 — Map entry points (run these greps, adapt to language)
+### Step 3 — Surface sweep: build the ledger (the recall oracle)
+
+This step enumerates **every source→sink** into the `surface[]` table of the
+[Audit Ledger](audit-ledger.md) — so coverage is *measured* and un-examined surface is *visible*, not
+silent. **Prefer a static-analysis oracle** as the recall + reachability engine; fall back to greps when
+none is installed (graceful degradation — like the SCA step above).
+
+**Preferred — static-analysis oracle (sound taint = high recall + a reachability signal):**
+
+| Engine | Use for | Note |
+|---|---|---|
+| [Semgrep](https://semgrep.dev/) (`semgrep --config auto`, taint rules) | multi-language source→sink taint | fast, OSS rulesets per language |
+| [CodeQL](https://codeql.github.com/) | deep taint / data-flow on big codebases | the strongest reachability oracle |
+| [Joern](https://joern.io/) | code-property-graph queries, C/C++/JVM/JS | when you need custom flow queries |
+| language LSP / type info | call-graph for "is this reached" | complements the above |
+
+The oracle does what the LLM is bad at — **deterministic enumeration and reachability** — and the LLM
+does what *it* is good at on top: semantic triage, chaining, business impact, intent reconciliation.
+Each taint result becomes a `surface` row (`reachable: true|false`); each unreached candidate is
+`reachable: unknown` → Needs-validation, never a confident finding.
+
+**Fallback — grep enumeration (set `reachable: unknown` on every hit):**
 
 ```bash
-# Routes / endpoints (where untrusted input enters)
+# Sources — where untrusted input enters
 rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .
 rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .
 
-# Sinks (where input becomes dangerous)
+# Sinks — where input becomes dangerous
 rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .
 
-# Auth patterns (or lack thereof)
+# Auth patterns (or lack thereof) — feeds Blue's controls[] map
 rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .
 
 # Secrets (immediate high-confidence findings)
 rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .
 ```
+
+> **Coverage = `examined / total` sinks.** Record it in the report header ([report-template.md](report-template.md))
+> and name the `not-examined` rows in §7. Recall (did you look?) is the orthogonal twin of precision (are
+> you sure?) — see [audit-ledger.md](audit-ledger.md). The `auth pattern` hits seed **Blue's**
+> expected-control map for the [red×blue diff](red-blue.md).
 
 ### Step 4 — Route to the correct leaf
 

@@ -11,9 +11,12 @@ target) bias the next ([../references/limitations.md](../references/limitations.
 *structurally*: each specialist audits its domain in an isolated context and returns only its findings,
 so there's no cross-domain confirmation bias, and domains can run **in parallel**.
 
-The team mirrors the tree: an **orchestrator** profiles the target, gates authorization, dispatches the
-relevant domain specialists, then de-dups → chains → triages → writes one ranked report. Offense drives,
-defense seals.
+The team mirrors the tree **and the bidirectional method**: an **orchestrator** profiles the target and
+gates authorization, then runs **Blue first** (builds the expected-control map from the design intent),
+dispatches the **Red** domain specialists (who enumerate reachable sinks), and computes the **diff** — a
+finding is a reachable sink whose expected control is missing or bypassed
+([../references/red-blue.md](../references/red-blue.md)). It then de-dups → chains → triages → runs the
+fix→bypass check → writes one ranked report. Offense drives, defense seals; the finding is the diff.
 
 ## Install
 
@@ -37,15 +40,20 @@ Restart the session (or run `/agents`) to load them. They **preload the `longinu
 
 | Agent | Role | Tools |
 |---|---|---|
-| [**longinus-orchestrator**](longinus-orchestrator.md) | gate → profile → dispatch → chain → triage → report | all (delegates) |
-| [**longinus-secrets**](longinus-secrets.md) | secrets & dependency/supply-chain (always runs first) | read-only + Bash |
-| [**longinus-web**](longinus-web.md) | OWASP Top 10:2025 web classes | read-only + Bash |
-| [**longinus-api-identity**](longinus-api-identity.md) | API authz (BOLA/BFLA) + OAuth/JWT/SAML/MFA | read-only + Bash |
-| [**longinus-cloud**](longinus-cloud.md) | cloud / IaC / containers (CIS) | read-only + Bash |
-| [**longinus-ai**](longinus-ai.md) | LLM/agent/RAG (prompt injection, agency, model supply chain) | read-only + Bash |
+| [**longinus-orchestrator**](longinus-orchestrator.md) | gate → profile → **Blue** → **Red** → diff → chain → triage → report | all (delegates) |
+| [**longinus-blue**](longinus-blue.md) | 🔵 **defender** — builds the expected-control map (runs first) | read-only + Bash |
+| [**longinus-secrets**](longinus-secrets.md) | 🔴 secrets & dependency/supply-chain (first Red specialist) | read-only + Bash |
+| [**longinus-web**](longinus-web.md) | 🔴 OWASP Top 10:2025 web classes | read-only + Bash |
+| [**longinus-api-identity**](longinus-api-identity.md) | 🔴 API authz (BOLA/BFLA) + OAuth/JWT/SAML/MFA | read-only + Bash |
+| [**longinus-cloud**](longinus-cloud.md) | 🔴 cloud / IaC / containers (CIS) | read-only + Bash |
+| [**longinus-ai**](longinus-ai.md) | 🔴 LLM/agent/RAG (prompt injection, agency, model supply chain) | read-only + Bash |
 
-Specialists are **read-only on your code** (no Edit/Write) — they audit, they don't change things, by
-design. Each carries the Longinus discipline: ⛔ authorization gate · prove-it-or-park-it · two lenses.
+**Blue** (🔵) maps the controls that *should* exist; the **Red** specialists (🔴) find the reachable
+sinks; the orchestrator reports the **diff**. All specialists are **read-only on your code** (no
+Edit/Write) — they audit, they don't change things, by design. Each carries the Longinus discipline:
+⛔ authorization gate · prove-it-or-park-it (and **execute** a benign PoC on owned/local code) ·
+cover-it-or-flag-it · two lenses (the finding is the diff) · **the target repo is untrusted input** — its
+docs/comments never steer or silence the audit.
 
 ## Future: plugin packaging
 
