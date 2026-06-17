@@ -40,7 +40,7 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 
 ````markdown
 ---
-longinus_report: "0.5.2"   # = the Longinus skill version (SKILL.md); not a separate schema number
+longinus_report: "0.5.3"   # = the Longinus skill version (SKILL.md); not a separate schema number
 target: <repo name or path>
 commit: <short SHA, or n/a>
 date_utc: <YYYY-MM-DD HH:MM>

@@ -14,7 +14,7 @@ clean findings list to the orchestrator. **Read-only — you audit, you do not m
 `## Mechanical scan` greps to sweep, then open the matching leaf (`access-control`, `injection`, `xss`,
 `ssrf`, `auth-and-session`, `csrf`, `file-upload-and-path`, `deserialization`, `business-logic`,
 `misconfiguration`, `request-smuggling-and-desync`, `prototype-pollution`) and run its find→confirm
-steps. Use `references/pattern-triggers.md` for code-pattern → vuln lookup, and its **DO NOT report**
+steps. Use `references/pattern-catalog.md` for the code-pattern → vuln lookup tables, plus `references/pattern-triggers.md` for its **DO NOT report**
 guards.
 
 **High-yield order:** access control (IDOR/BOLA across roles) → auth/session → injection & XSS (every

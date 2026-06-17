@@ -175,9 +175,9 @@ apply (a web app that also uses an LLM), prioritize:
 2. Primary domain (web / api / ai-llm / cloud / mobile)
 3. Secondary domains
 
-### Step 5 — For source-code audits, also use the pattern trigger table
+### Step 5 — For source-code audits, also use the pattern catalog
 
-Open [pattern-triggers.md](pattern-triggers.md) — it maps code patterns directly to vulnerability
+Open [pattern-catalog.md](pattern-catalog.md) — it maps code patterns directly to vulnerability
 checks. Scan for the patterns; each match tells you exactly which leaf to open and what to confirm.
 
 ---

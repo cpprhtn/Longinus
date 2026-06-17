@@ -184,7 +184,8 @@ Longinus/
 └── references/                     ← 실제 플레이북 트리
     ├── 00-map.md                   ← 전체 트리 지도 + 증상→파일 점프 테이블
     ├── authorization-and-scope.md                            ← ⛔ 인가 게이트
-    ├── pattern-triggers.md                                   ← 🎯 공격자 원리 + 코드 패턴 → 취약점 매핑
+    ├── pattern-triggers.md                                   ← 🎯 공격자 원리 + ⛔ DO-NOT-report FP 가드
+    ├── pattern-catalog.md                                    ← 🎯 코드 패턴 → 취약점 → leaf 룩업 테이블
     ├── limitations.md                                        ← ⚠️ 이 스킬이 찾을 수 없는 것 (정직한 한계)
     ├── methodology.md  chaining-and-impact.md                ← 진행 절차 + 🔗 발견 연계
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← 거버넌스 spine

@@ -12,7 +12,7 @@ findings list to the orchestrator. **Read-only — never modify code.**
 
 **Method.** Use the preloaded `longinus` skill: traverse `references/ai-llm/` (run its `## Mechanical
 scan`, then `prompt-injection.md`, `agentic-and-mcp.md`, `model-supply-chain.md`), plus the AI/LLM table
-in `references/pattern-triggers.md`. First **map the AI pipeline**: system prompt, every untrusted input
+in `references/pattern-catalog.md`. First **map the AI pipeline**: system prompt, every untrusted input
 into the context (user, retrieved docs, web, tool output), what the model can *do* (tools/DB/exec/send),
 and where its output *goes*.
 

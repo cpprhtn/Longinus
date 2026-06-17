@@ -17,7 +17,7 @@ You already see something specific — go straight to the leaf, skip the branch 
 is the *only* file you need to open for that signal.)
 
 > **For source-code audits** where you're scanning code patterns rather than observing runtime
-> signals, use the [pattern-triggers.md](pattern-triggers.md) lookup table instead — it maps code
+> signals, use the [pattern-catalog.md](pattern-catalog.md) lookup table instead — it maps code
 > patterns directly to vulnerability checks with false-positive guards.
 > For honest capability limits, see [limitations.md](limitations.md).
 
@@ -79,7 +79,8 @@ Longinus
 │   ├── red-blue.md ...................... ⚔️ bidirectional method: Blue control-map × Red sinks → the diff is the flaw
 │   ├── audit-ledger.md ................. 📒 the shared surface[]/controls[] ledger — coverage/recall + the red×blue diff
 │   ├── attacker-mindset.md .............. 🧠 → merged into pattern-triggers.md (redirect stub)
-│   ├── pattern-triggers.md .............. 🎯 code pattern → vulnerability lookup + 6 generative principles
+│   ├── pattern-triggers.md .............. 🎯 6 generative principles + ⛔ DO-NOT-report FP guards
+│   ├── pattern-catalog.md ............... 🎯 code pattern → vulnerability → leaf lookup tables
 │   ├── proof-and-confirmation.md ....... 🔬 run a benign PoC → Confirmed (executed) vs (traced); gate-bounded
 │   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report

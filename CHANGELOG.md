@@ -3,6 +3,17 @@
 Notable changes to **Longinus**, newest first. The report header's `longinus_report` field tracks the
 Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v0.5.3
+
+- **`pattern-triggers.md` split for token economy** — the bulky code-pattern → vulnerability **lookup
+  tables** moved to a new deferred [`pattern-catalog.md`](references/pattern-catalog.md); `pattern-triggers.md`
+  stays a lean reference of the **six generative principles + the ⛔ DO-NOT-report FP guards**. An audit
+  reads the lean ~2k principles/guards *or* the ~3.2k catalog (whichever it needs) instead of the old
+  combined ~4.9k — about **1.7k fewer tokens per pattern-lookup read** (multiplied across specialists on the
+  multi-agent path). False-positive discipline is unchanged: the per-pattern FP guards travel with the
+  catalog rows, so low-FP behaviour holds — re-running the cwal quick + standard audits still
+  placeholder-downgraded the dummy credentials, suppressed speculative items, and invented no CVE.
+
 ### v0.5.2
 
 - **Agent path synced to the skill report format** — the multi-agent orchestrator drops a stale

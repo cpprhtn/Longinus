@@ -13,7 +13,7 @@ live infrastructure.**
 
 **Method.** Use the preloaded `longinus` skill: traverse `references/cloud-and-infra/` (run its
 `## Mechanical scan`, then `cloud-iam.md` and `iac-and-containers.md`), plus the Cloud/IaC table in
-`references/pattern-triggers.md`. Prefer scanners when present:
+`references/pattern-catalog.md`. Prefer scanners when present:
 
 ```bash
 checkov -d . --compact 2>/dev/null ; tfsec . 2>/dev/null ; trivy config . 2>/dev/null

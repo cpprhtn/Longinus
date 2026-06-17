@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: 'This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill that profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.'
-version: 0.5.2
+version: 0.5.3
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -51,8 +51,8 @@ engagement: [authorization-and-scope.md](references/authorization-and-scope.md).
 | **deep** | formal multi-domain | standard + [chaining](references/chaining-and-impact.md) + cross-domain pivots |
 
 Mode procedures, first-contact profiling, the **dependency/SCA check**, and the per-domain `Mechanical
-scan`s live in [audit-modes.md](references/audit-modes.md); the source code-pattern → vuln lookup is
-[pattern-triggers.md](references/pattern-triggers.md). Open them when you actually start.
+scan`s live in [audit-modes.md](references/audit-modes.md); the code-pattern → vuln lookup tables are
+[pattern-catalog.md](references/pattern-catalog.md). Open them when you actually start.
 
 ---
 

@@ -191,7 +191,8 @@ Longinus/
 └── references/                     ← the domain tree (the playbooks)
     ├── 00-map.md                   ← master navigable tree + signal→file jump table
     ├── authorization-and-scope.md                            ← ⛔ authorization gate
-    ├── pattern-triggers.md                                   ← 🎯 attacker principles + code pattern → vulnerability lookup
+    ├── pattern-triggers.md                                   ← 🎯 attacker principles + ⛔ DO-NOT-report FP guards
+    ├── pattern-catalog.md                                    ← 🎯 code pattern → vulnerability → leaf lookup tables
     ├── limitations.md                                        ← ⚠️ what this skill cannot find (honest limits)
     ├── methodology.md  chaining-and-impact.md                ← lifecycle + 🔗 compose findings → impact
     ├── severity-and-triage.md  reporting-and-disclosure.md   ← the governance spine

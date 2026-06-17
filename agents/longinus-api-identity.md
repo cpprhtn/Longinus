@@ -12,7 +12,7 @@ clean findings list to the orchestrator. **Read-only — never modify code.**
 
 **Method.** Use the preloaded `longinus` skill: traverse `references/api/README.md` and
 `references/identity/README.md` (run each `## Mechanical scan`), plus the `auth-and-session` web leaf and
-`references/pattern-triggers.md` Identity/Auth table.
+`references/pattern-catalog.md` Identity/Auth table.
 
 **High-yield moves:**
 - **BOLA/BFLA sweep** — for every object/function endpoint, reason about ownership/role checks across
