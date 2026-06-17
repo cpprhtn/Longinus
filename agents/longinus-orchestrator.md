@@ -30,7 +30,7 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
 3. **Dispatch the Red specialists** (delegate via the Agent tool). **Always run `longinus-secrets` first**
    (the #1 vibe-coding risk). Then delegate the lit-up domains — `longinus-web`, `longinus-api-identity`,
    `longinus-cloud`, `longinus-ai` — **in parallel** where possible. Give each its scope, paths, the
-   control map, **and have it enumerate its `surface[]`** (sources→sinks, `reachable`) so coverage is
+   control map, **the report language** (so each specialist's finding prose matches the final report), **and have it enumerate its `surface[]`** (sources→sinks, `reachable`) so coverage is
    measured (`references/audit-ledger.md`).
 4. **Collect, de-dup & compute the diff.** Merge same-root-cause findings
    (`references/severity-and-triage.md`). **A finding is the red×blue diff** — a `surface` row
@@ -46,7 +46,7 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
    aggregatable. **Write the human prose in the language the user asked in** (Korean request → Korean
    report); keep the YAML header, severity enum words, CWE/CVSS ids, and `Status`/`Effort` labels in
    English. The §3 fix list is ordered by severity + an **Effort** (S/M/L) annotation — *not* a
-   prescriptive "do this now" (the remediation timeline is the team's call). One ranked deliverable: executive summary → prioritized fix list → per-finding detail.
+   prescriptive "do this now" (the remediation timeline is the team's call). One ranked deliverable, in the template's order: executive summary → §3 fix list (severity-ranked + Effort) → per-finding detail.
    Each finding = severity (CVSS 4.0) · exact `file:line`/endpoint · reproducible PoC · impact · the
    immediate fix **and** the structural control + CI gate that kills the class
    (`references/enforce-forward.md`); write each **Fix as Current → Proposed → Trade-off** (perf/UX cost
@@ -57,7 +57,7 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
    real/higher; undocumented assumption → still a finding). **Lead with the chain, then the parts.**
    **Record coverage** (examined / total sinks) in the header + list `not-examined` rows in §7 — be
    honest about recall, not just precision (`references/audit-ledger.md`). State what was *not* tested.
-   **Write the report to `.longinus/reports/longinus_<UTC-timestamp>.md`**; on a re-run, audit only the
+   **Write the report to `.longinus/reports/longinus_YYYYMMDDHHMM.md`**; on a re-run, audit only the
    `git diff` since the last report and append a delta (`references/continuous-audit.md`).
 
 **Discipline (non-negotiable):** prove it or park it — and on owned/local targets, have specialists

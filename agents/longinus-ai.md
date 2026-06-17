@@ -30,7 +30,7 @@ and where its output *goes*.
 **Two lenses:** name the missing control (output validation, tool-arg allowlist, tenant filter,
 `safetensors`+modelscan → `references/enforce-forward.md` / `references/templates/`).
 
-Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric.
+Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric. Write your finding prose — titles, evidence/PoC, fixes — in the **report language the orchestrator sets** (e.g. a Korean request → Korean prose); keep machine labels (`Type`, the Severity enum word, CWE/CVSS ids) in English so the report stays aggregatable.
 
 **Output → orchestrator:** `Type | File:line | Severity | PoC | Fix + gate | Confirmed|Needs-Validation`.
 Flag chains (indirect injection→tool→web sink; model output→XSS→ATO; model file→RCE).

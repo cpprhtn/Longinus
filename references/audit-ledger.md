@@ -11,7 +11,10 @@ it answerable — and it is the surface the two lenses meet on:
   not prose.
 
 The ledger lives in the **report's YAML header** ([report-template.md](report-template.md)) — it is part
-of the report, not a separate tool artifact.
+of the report, not a separate tool artifact. The full `surface[]`/`controls[]` arrays are emitted **only
+when the audit builds one** (the multi-agent path, where Blue builds `controls[]`, or `deep` mode); the
+single-skill/`standard` baseline carries the always-required `coverage:` counts and accounts for sinks in
+§7 prose instead. The recall discipline below is the same either way.
 
 > **Canonical schema.** This file is the single source of truth for the ledger schema; the YAML header in
 > [report-template.md](report-template.md) mirrors it — if they disagree, this file wins. (Same
@@ -39,8 +42,10 @@ lacked.
 
 ## The schema (two tables in the report header)
 
-The ledger has two tables. The LLM fills them as it audits; they ride in the report's YAML header so a
-human can inspect them and reports stay comparable.
+The ledger has two tables. The LLM fills them as it audits; on the multi-agent path or `deep` mode they
+ride in the report's YAML header so a human can inspect them and reports stay comparable (the
+single-skill/`standard` baseline distills them to the `coverage:` counts + §7 prose — see
+[report-template.md](report-template.md) rule 7).
 
 ### 1. `surface` — the source→sink ledger (recall)
 
@@ -113,7 +118,8 @@ exactly like the SCA tools in [audit-modes.md](audit-modes.md).
 
 ## References
 
-The schema is mirrored by [report-template.md](report-template.md) (the report header carries it); the
+The schema is mirrored by [report-template.md](report-template.md) (the report header carries it on the
+multi-agent/`deep` path; the baseline carries the `coverage:` counts — rule 7); the
 recall philosophy pairs with the precision firewall in [severity-and-triage.md](severity-and-triage.md);
 the two-lens diff is operationalized in [red-blue.md](red-blue.md). Full bibliography:
 [research/process.md](../research/process.md).

@@ -95,7 +95,7 @@ prioritized fix list, then per-finding detail with PoC and remediation. For code
 patch — and, beyond the per-instance patch, the **structural control + the CI/lint gate** that kills the
 class and prevents regression ([enforce-forward.md](enforce-forward.md)). Show each fix as
 **current → proposed → trade-off** (the perf/UX cost of the change), per finding. For third-party targets, follow responsible disclosure.
-**Always write the report to a file** (`.longinus/reports/longinus_<ts>.md`); on a re-run, audit only
+**Always write the report to a file** (`.longinus/reports/longinus_YYYYMMDDHHMM.md`); on a re-run, audit only
 the diff and append a delta ([continuous-audit.md](continuous-audit.md)).
 
 ## 9. Retest

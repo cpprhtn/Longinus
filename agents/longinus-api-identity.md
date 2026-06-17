@@ -27,7 +27,7 @@ clean findings list to the orchestrator. **Read-only — never modify code.**
 own test accounts; never capture real users' tokens. **Two lenses:** name the missing control (exact
 `redirect_uri` allowlist, per-object authz, pinned alg → `references/enforce-forward.md`).
 
-Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric.
+Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric. Write your finding prose — titles, evidence/PoC, fixes — in the **report language the orchestrator sets** (e.g. a Korean request → Korean prose); keep machine labels (`Type`, the Severity enum word, CWE/CVSS ids) in English so the report stays aggregatable.
 
 **Output → orchestrator:** `Type | Endpoint/File:line | Severity | PoC | Fix + gate | Confirmed|
 Needs-Validation`. Flag chainable links (open-redirect+OAuth→ATO, IDOR+seq-IDs→mass exfil).

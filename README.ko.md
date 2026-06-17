@@ -61,7 +61,7 @@ cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
 **스택을 가리지 않습니다.** Python/FastAPI, Node/Express, React Native, Go, Terraform/클라우드, LLM/RAG 앱
 등 — 타깃을 먼저 분석한 뒤 알맞은 플레이북으로 안내합니다. 다만 독립적으로 실행되는 자동 스캐너가 아니라, Claude가
 코드를 직접 검토하도록 이끄는 도구이며 기본 동작은 read-only입니다. 모든 실행은 고정 형식 보고서를
-`.longinus/reports/longinus_<타임스탬프>.md`에 작성합니다. 본인 소유가 아닌 대상을 테스트하기 전에는 반드시
+`.longinus/reports/longinus_YYYYMMDDHHMM.md`에 작성합니다. 본인 소유가 아닌 대상을 테스트하기 전에는 반드시
 [인가 게이트](references/authorization-and-scope.md)를 확인하세요.
 
 > ⛔ **방어를 위한 공격입니다.** 내가 소유한 코드, 명시적으로 인가받은 타깃, CTF·실습 환경에서만 사용하세요.
@@ -201,6 +201,18 @@ Longinus/
 도메인 리프와 `research/` 참고문헌은 지속적으로 발전시키는 살아있는 문서이며, 기법의 변화에 맞춰 함께 갱신합니다
 (정책: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.5.2
+
+- **에이전트 경로를 스킬 보고서 형식에 동기화** — 멀티에이전트 orchestrator의 stale "prioritized" 표현을
+  제거하고, v0.5.1 언어매칭 규칙을 Red specialist들에 전파했습니다. 이제 한글 검사 시 **멀티에이전트** 경로도
+  한글 발견 산문을 반환합니다(Blue는 기계계층 control map을 만들므로 영어 유지).
+- **하나의 버전 라인 + 정규 파일명** — 모든 경로가 `longinus_YYYYMMDDHHMM.md`(UTC)를 쓰고, 헤더의
+  `longinus_report`가 독립 문서 스키마 번호(과거 `1.2`) 대신 **Longinus 스킬 버전**(현재 `0.5.2`)을 담습니다 —
+  스킬·에이전트·보고서가 하나의 버전.
+- **coverage baseline ↔ 레저 배열** — `coverage:` 카운트는 모든 보고서 필수; full `surface[]`/`controls[]`
+  배열은 멀티에이전트/`deep` 경로에서만 헤더에 실리고, 단일 스킬/`standard` baseline은 §7 산문으로 각 sink를
+  계정합니다. 스킬↔에이전트 보고서 divergence 해소.
+
 ### v0.5.1
 
 - **보고서가 독자의 언어로 작성** — 감사가 산문(요약·발견·수정·제목)을 **사용자가 질문한 언어**로 씁니다(한글
@@ -228,7 +240,7 @@ Longinus/
   취급합니다. 감사자에게 건너뛰기·하향·"보고 금지"를 지시하는 텍스트는 indirect prompt injection이라 *지시가
   아니라 발견*이 되고, design-intent의 downgrade 경로로 실제 버그를 세탁하지 못합니다
   (`references/design-intent.md`).
-- **보고서 스키마 1.2** — 보고서 YAML 헤더에 `coverage` 필드(검사한 sink / 전체 sink), 발견 Status에 증거
+- **보고서 헤더에 커버리지 추가** — 보고서 YAML 헤더에 `coverage` 필드(검사한 sink / 전체 sink), 발견 Status에 증거
   등급(executed / traced)이 추가됩니다. 고정 8개 섹션은 그대로입니다.
 
 ### v0.4.0
@@ -239,7 +251,7 @@ Longinus/
   인용); 의도와 모순 → 진짜/상향; *미문서화* 가정 → 여전히 결함. (`references/design-intent.md`)
 - **수정 트레이드오프** — 모든 수정을 **기존 → 수정안 → 트레이드오프**(변경 적용 시 성능/UX 비용)로 제시;
   정보용 — 심각도가 *수정 여부*를 결정.
-- **보고서 파일 출력 + continuous/diff 모드** — 모든 검사가 `.longinus/reports/longinus_<ts>.md`를 작성;
+- **보고서 파일 출력 + continuous/diff 모드** — 모든 검사가 `.longinus/reports/longinus_YYYYMMDDHHMM.md`를 작성;
   재실행 시 직전 보고서 이후 `git diff`만 검사하고 델타 append (cron/CI 또는 `/schedule`로 구동).
   (`references/continuous-audit.md`)
 - 오케스트레이터가 Intent Brief를 한 번 만들어 모든 전문가에게 전달.

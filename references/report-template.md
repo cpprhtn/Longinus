@@ -22,21 +22,25 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 >    ran a benign PoC) · `✅ Confirmed (traced)` (proved the source→sink path, not run) ·
 >    `❓ Needs-validation`. Never write "executed" for a PoC you didn't run
 >    ([proof-and-confirmation.md](proof-and-confirmation.md)).
-> 7. **Coverage is mandatory and honest** — the `coverage:` header + the dashboard line state how much of
+> 7. **Coverage is mandatory and honest** — the `coverage:` counts + the dashboard line state how much of
 >    the attack surface was examined. A clean report at 40% coverage is an honest 40%, **not** "all clear"
->    ([audit-ledger.md](audit-ledger.md)). The `surface[]`/`controls[]` ledger rides in the YAML header.
+>    ([audit-ledger.md](audit-ledger.md)). The `coverage:` counts are **required in every report**; the full
+>    `surface[]`/`controls[]` ledger arrays ride in the header **only when the audit built one** — the
+>    multi-agent path (Blue builds `controls[]`) or `deep` mode. The single-skill/`standard` baseline omits
+>    the arrays and accounts for each sink in §7 prose instead (don't synthesize them just to fill the
+>    header). Either way **§7 must list examined vs not-examined** so recall stays auditable.
 > 8. **Match the request's language.** Write all human prose — summary, finding titles/descriptions,
 >    fixes, recommendations, and the section headings — in the **language the user asked in** (a Korean
 >    request → a Korean report). Keep the **YAML header, the severity enum words (rule 3), CWE/OWASP/CVSS
 >    ids, and the `Status`/`Effort` labels canonical English** so reports stay machine-aggregatable and
 >    diffable across languages.
-> 9. Write the file to `.longinus/reports/longinus_<UTC>.md` ([continuous-audit.md](continuous-audit.md)).
+> 9. Write the file to `.longinus/reports/longinus_YYYYMMDDHHMM.md` ([continuous-audit.md](continuous-audit.md)).
 
 ---
 
 ````markdown
 ---
-longinus_report: "1.2"
+longinus_report: "0.5.2"   # = the Longinus skill version (SKILL.md); not a separate schema number
 target: <repo name or path>
 commit: <short SHA, or n/a>
 date_utc: <YYYY-MM-DD HH:MM>
@@ -45,6 +49,9 @@ scope: <one line — in/out of scope; static or dynamic>
 overall_risk: <Critical|High|Medium|Low|Informational>
 counts: { critical: 0, high: 0, medium: 0, low: 0, info: 0, needs_validation: 0 }
 coverage: { examined: 0, total: 0, pct: 0 }   # examined sinks / enumerated sinks — see audit-ledger.md
+# surface[] / controls[] ledger arrays — OPTIONAL: emitted here only on the multi-agent path or `deep`
+# mode (where Blue builds controls[]); the single-skill/standard baseline omits them and accounts for
+# sinks in §7 prose instead. Schema: audit-ledger.md
 ---
 
 # 🗡️ Longinus security audit — <target>
@@ -113,9 +120,11 @@ coverage: { examined: 0, total: 0, pct: 0 }   # examined sinks / enumerated sink
 <unconfirmed items, clearly separated — NEVER mixed into §4. Or "None.">
 
 ## 7. What was NOT tested
-<honest coverage gaps: dynamic behavior, classes N/A, tools missing, out-of-scope. **List the
-`surface[]` rows whose verdict is `not-examined` / `reachable: unknown`** — these are the recall gaps
-([audit-ledger.md](audit-ledger.md)). Coverage % above must reconcile with this list.>
+<honest coverage gaps: dynamic behavior, classes N/A, tools missing, out-of-scope. **Enumerate what was
+examined vs not** — when a `surface[]` ledger exists (multi-agent / `deep`), list the rows whose verdict is
+`not-examined` / `reachable: unknown`; otherwise (single-skill/`standard` baseline) account for the sinks in
+prose. These are the recall gaps ([audit-ledger.md](audit-ledger.md)). Coverage % above must reconcile with
+this list.>
 
 ## 8. Next run (incremental)
 Recorded commit `<sha>`. A re-run audits `git diff <sha>..HEAD` and appends a delta

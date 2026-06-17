@@ -62,7 +62,7 @@ After installing, invoke it **three ways**:
 **It's stack-agnostic** — Python/FastAPI, Node/Express, React Native, Go, Terraform/cloud, an LLM/RAG
 app — because it **profiles the target first**, then routes to the right playbooks. It guides Claude to
 audit your code (read-only by default); it is *not* an automatic scanner that runs on its own. Every run
-writes a fixed-format report to `.longinus/reports/longinus_<timestamp>.md`. Before testing anything you
+writes a fixed-format report to `.longinus/reports/longinus_YYYYMMDDHHMM.md`. Before testing anything you
 don't own, clear the [authorization gate](references/authorization-and-scope.md).
 
 > ⛔ **Offense in service of defense.** Longinus is for code you own, targets you're explicitly
@@ -208,6 +208,20 @@ matching `research/<domain>.md` for the canonical frameworks and tool URLs.
 The domain leaves and `research/` bibliography are living documents; extend them as techniques
 evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
 
+### v0.5.2
+
+- **Agent path synced to the skill report format** — the multi-agent orchestrator drops a stale
+  "prioritized" wording, and the v0.5.1 language-match rule now propagates to the Red specialists, so a
+  Korean audit returns Korean finding prose from the **multi-agent** path too (Blue stays English — it
+  builds the machine-layer control map).
+- **One version line + canonical filename** — every path writes `longinus_YYYYMMDDHHMM.md` (UTC), and the
+  report header's `longinus_report` field carries the **Longinus skill version** (now `0.5.2`) instead of
+  an independent document-schema number (was `1.2`) — skill, agents, and report share one version.
+- **Coverage baseline vs. ledger arrays** — the `coverage:` counts are required in every report; the full
+  `surface[]`/`controls[]` ledger arrays ride in the header only on the multi-agent / `deep` path, while
+  the single-skill/`standard` baseline accounts for each sink in §7 prose. Resolves a skill-vs-agent report
+  divergence.
+
 ### v0.5.1
 
 - **Report speaks the reader's language** — the audit writes its prose (summary, findings, fixes,
@@ -238,7 +252,7 @@ evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
   treated as **untrusted input**; text that tells the auditor to skip, downgrade, or "report nothing" is
   indirect prompt injection and becomes a finding, never an instruction, and can't launder a real bug via
   the design-intent downgrade path (`references/design-intent.md`).
-- **Report schema 1.2** — the report YAML header gains a `coverage` field (examined / total sinks), and a
+- **Coverage in the report header** — the report YAML header gains a `coverage` field (examined / total sinks), and a
   finding's Status carries its evidence tier (executed / traced); the 8 fixed sections are unchanged.
 
 ### v0.4.0
@@ -250,7 +264,7 @@ evolve (policy: [research/meta-resources.md](research/meta-resources.md)).
   → real/higher; *undocumented* assumption → still a finding. (`references/design-intent.md`)
 - **Fix trade-offs** — every fix is shown as **current → proposed → trade-off** (the perf/UX cost of the
   change); informational — severity still decides *whether* to fix.
-- **Report as a file + continuous/diff mode** — every audit writes `.longinus/reports/longinus_<ts>.md`;
+- **Report as a file + continuous/diff mode** — every audit writes `.longinus/reports/longinus_YYYYMMDDHHMM.md`;
   re-runs audit only the `git diff` since the last report and append a delta (drive it from cron/CI or
   `/schedule`). (`references/continuous-audit.md`)
 - The orchestrator builds the Intent Brief once and passes it to every specialist.
