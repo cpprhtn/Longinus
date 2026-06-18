@@ -42,6 +42,23 @@ cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
 Then ask *"run a Longinus audit"* and the **orchestrator** dispatches the specialists. See
 [agents/README.md](agents/README.md).
 
+## Recommended local tools (leaner & more precise — optional)
+
+Longinus offloads *deterministic discovery* to local tools when they're installed and keeps the LLM for
+**triage** — so with these present an audit reads and reasons **less** (fewer tokens) **and** is more precise
+(sound enumeration + reachability, no guessing). Without them it falls back to `rg`/grep + LLM reasoning —
+still works, just heavier. **Discover with tools, triage with the LLM.**
+
+| Tool | Gives Longinus | Why it cuts tokens |
+|---|---|---|
+| **[ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`)** | fast code search — the mechanical scans + surface sweep already use it | quicker, cleaner sweeps |
+| **[Semgrep](https://semgrep.dev/)** (or CodeQL) | source→sink **taint + reachability** | the LLM triages a candidate list instead of enumerating + reasoning reachability by hand |
+| **[gitleaks](https://github.com/gitleaks/gitleaks)** (or trufflehog) | deterministic **secret** scan (incl. git history) | the LLM doesn't reason "is this a real secret" |
+| **SCA** — `pip-audit` · `npm audit` · `osv-scanner` · `trivy` · `govulncheck` · `cargo-audit` | dependency **CVEs** (see *Dependency CVE checks* below) | real CVEs from a database, never guessed |
+
+None are required — Longinus is read-only and degrades gracefully — but a tool-rich environment (e.g. CI)
+makes each audit lighter and tighter.
+
 ## Usage
 
 After installing, invoke it **three ways**:

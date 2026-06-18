@@ -41,6 +41,22 @@ cp ~/.claude/skills/longinus/agents/*.md ~/.claude/agents/
 `description`을 보고 **오케스트레이터에 자동 위임**합니다. 자동 위임이 안 되면 *"longinus-orchestrator 에이전트로
 검사해 줘"* 처럼 명시해 호출하세요. → [agents/README.md](agents/README.md).
 
+## 권장 로컬 도구 (더 가볍고 정밀 — 선택)
+
+Longinus는 설치돼 있으면 *결정적 발견*을 로컬 도구에 넘기고 LLM은 **triage**에만 씁니다 — 그래서 이 도구들이
+있으면 감사가 **덜 읽고 덜 추론**(토큰↓)하면서 **더 정밀**(건전한 enumeration+reachability, 추측 없음)합니다.
+없으면 `rg`/grep + LLM 추론으로 fallback(동작은 하되 더 무거움). **발견은 도구로, 판단은 LLM으로.**
+
+| 도구 | Longinus에 주는 것 | 토큰을 아끼는 이유 |
+|---|---|---|
+| **[ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`)** | 빠른 코드 검색 — mechanical scan·surface sweep이 이미 사용 | 더 빠르고 깔끔한 sweep |
+| **[Semgrep](https://semgrep.dev/)** (또는 CodeQL) | source→sink **taint + reachability** | LLM이 직접 열거·도달성 추론하는 대신 *후보 리스트만 triage* |
+| **[gitleaks](https://github.com/gitleaks/gitleaks)** (또는 trufflehog) | 결정적 **secret** 스캔 (git history 포함) | LLM이 "이게 진짜 secret인가" 추론 안 함 |
+| **SCA** — `pip-audit` · `npm audit` · `osv-scanner` · `trivy` · `govulncheck` · `cargo-audit` | 의존성 **CVE** (아래 *의존성 CVE 점검* 참조) | DB 기반 실제 CVE, 추측 금지 |
+
+필수는 아니며 — Longinus는 read-only로 graceful하게 fallback — 도구-풍부 환경(예: CI)일수록 매 감사가 더
+가볍고 정밀합니다.
+
 ## 사용
 
 설치 후 **세 가지 방법**으로 호출합니다:
