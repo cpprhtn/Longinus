@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: 'This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill that profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.'
-version: 0.5.4
+version: 0.5.5
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -119,7 +119,7 @@ Full lifecycle, only if you need it: [methodology.md](references/methodology.md)
   ([pattern-triggers.md](references/pattern-triggers.md)); rate by *chained* impact, never in isolation.
 - **Fix-forward → enforce-forward.** Every finding ends in the structural control + the CI/lint gate that
   kills the class → [enforce-forward.md](references/enforce-forward.md).
-- **Stay in scope & non-destructive** (when in doubt, narrow) · **read minimally** (one leaf at a time) ·
+- **Stay in scope & non-destructive** (when in doubt, narrow) · **read minimally** (one leaf at a time) · **batch the sweep** (mechanical greps in one Bash, not iterative — each round-trip reprocesses context) ·
   **teach briefly** *why* it's exploitable.
 - **One audit, one session** — repeated audits contaminate context (project A biases project B); `/clear`
   between targets → [limitations.md](references/limitations.md).

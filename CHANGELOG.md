@@ -3,6 +3,16 @@
 Notable changes to **Longinus**, newest first. The report header's `longinus_report` field tracks the
 Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v0.5.5
+
+- **Leaner standard reads + batched sweeps (housekeeping — honest scope).** Condensed the `report-template`
+  rules and the `audit-modes` quick/deep procedures (every rule + capability preserved); the mechanical sweep
+  now runs as **one batched Bash** instead of iterative greps (fewer tool round-trips reprocessing context).
+  On the multi-agent path the orchestrator **prunes domains with no surface** and **scales each specialist's
+  depth (chaining / executable-PoC) to the profile's stakes**. Net effect on single-skill `standard` is
+  ~neutral — this offsets the v0.5.4 profile's read cost and trims round-trips, *not* a cut below the v0.5.3
+  baseline (the real reduction was the v0.5.3 pattern-catalog split). FP discipline unchanged (validated).
+
 ### v0.5.4
 
 - **Systematic project profile (form factor × exposure × tenancy × crown jewels)** — first-contact

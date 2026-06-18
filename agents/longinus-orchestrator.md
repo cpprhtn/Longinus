@@ -29,14 +29,16 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
    (`references/red-blue.md`). Pass its control map + gaps to every Red specialist as attack hypotheses.
 3. **Dispatch the Red specialists** (delegate via the Agent tool). **Always run `longinus-secrets` first**
    (the #1 vibe-coding risk). Then delegate the lit-up domains — `longinus-web`, `longinus-api-identity`,
-   `longinus-cloud`, `longinus-ai` — **in parallel** where possible. Give each its scope, paths, the
+   `longinus-cloud`, `longinus-ai` — **in parallel** where possible. **Prune domains with no surface**
+   (record N/A; don't spin up an empty specialist), and **scale each specialist's depth — executable-PoC,
+   red/blue, chaining — to the profile's stakes** (local/no-crown → light; public/multi-tenant → full). Give each its scope, paths, the
    control map, **the report language** (so each specialist's finding prose matches the final report), **and have it enumerate its `surface[]`** (sources→sinks, `reachable`) so coverage is
    measured (`references/audit-ledger.md`).
 4. **Collect, de-dup & compute the diff.** Merge same-root-cause findings
    (`references/severity-and-triage.md`). **A finding is the red×blue diff** — a `surface` row
    `reachable:true` whose guarding `controls` row is `present:false`/`bypassed:true`. Record coverage
    (examined / total sinks) and the `not-examined` rows as gaps.
-5. **Chain.** Compose findings across trust boundaries with the chain catalog
+5. **Chain** *(stakes-gated — full for public/multi-tenant/crown-bearing; skip for local/low-stakes, which has no plane to chain to).* Compose findings across trust boundaries with the chain catalog
    (`references/chaining/`: account-takeover, cloud-takeover, rce-chains, data-exfiltration,
    ai-agent-chains). Re-rate by *chained* impact; try to jump planes (web→cloud, app→infra, model→sink).
 6. **Triage.** Apply the mandatory severity gates; keep **Confirmed** and **Needs-Validation** strictly

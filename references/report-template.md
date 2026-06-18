@@ -7,40 +7,28 @@ this full report.) Two readers must both be served: a **human** scanning it (so 
 scannable) and a **machine** aggregating it (so the YAML header is parseable). Reports must stay
 **diffable and comparable** across a fleet of projects.
 
-> **Rules (do not break these — they are why reports were inconsistent):**
-> 1. **Copy the skeleton verbatim** — don't rename, reorder, merge, split, or "lighten" sections.
-> 2. **Never drop a section** — if N/A, keep the heading and write `None` / `N/A`.
-> 3. **Severity is always a badge + word:** 🔴 `Critical` · 🟠 `High` · 🟡 `Medium` · 🔵 `Low` ·
->    ⚪ `Informational` · ❓ `Needs-validation`. Use these exact **English** words *even in a localized
->    report* — they are the canonical enum the dashboard and `counts` aggregate on.
-> 4. **Top dashboard is mandatory** (overall-risk line + the counts table) — it's the human at-a-glance.
-> 5. **Findings get stable IDs** `F1, F2, …` (so re-runs track the same finding over time), ordered by
->    severity (highest first), each with a one-line **Impact** TL;DR. The §3 Fix list references these
->    same F-IDs (not a separate counter) so the reader can jump fix → finding.
-> 6. **§4 Findings = Confirmed only. §6 = Needs-validation.** Never blur the two. Fill *every* field
->    (use `n/a`, never delete one). **Status carries the evidence tier:** `✅ Confirmed (executed)` (you
->    ran a benign PoC) · `✅ Confirmed (traced)` (proved the source→sink path, not run) ·
->    `❓ Needs-validation`. Never write "executed" for a PoC you didn't run
->    ([proof-and-confirmation.md](proof-and-confirmation.md)).
-> 7. **Coverage is mandatory and honest** — the `coverage:` counts + the dashboard line state how much of
->    the attack surface was examined. A clean report at 40% coverage is an honest 40%, **not** "all clear"
->    ([audit-ledger.md](audit-ledger.md)). The `coverage:` counts are **required in every report**; the full
->    `surface[]`/`controls[]` ledger arrays ride in the header **only when the audit built one** — the
->    multi-agent path (Blue builds `controls[]`) or `deep` mode. The single-skill/`standard` baseline omits
->    the arrays and accounts for each sink in §7 prose instead (don't synthesize them just to fill the
->    header). Either way **§7 must list examined vs not-examined** so recall stays auditable.
-> 8. **Match the request's language.** Write all human prose — summary, finding titles/descriptions,
->    fixes, recommendations, and the section headings — in the **language the user asked in** (a Korean
->    request → a Korean report). Keep the **YAML header, the severity enum words (rule 3), CWE/OWASP/CVSS
->    ids, and the `Status`/`Effort` labels canonical English** so reports stay machine-aggregatable and
->    diffable across languages.
-> 9. Write the file to `.longinus/reports/longinus_YYYYMMDDHHMM.md` ([continuous-audit.md](continuous-audit.md)).
+> **Rules (don't break these — they're why reports were inconsistent; full rationale in
+> [reporting-and-disclosure.md](reporting-and-disclosure.md)):**
+> **(1)** copy the skeleton **verbatim** — never rename/reorder/merge/drop a section (N/A → keep the heading,
+> write `None`). **(2)** severity = **badge + the canonical English enum word** (🔴 `Critical` · 🟠 `High` ·
+> 🟡 `Medium` · 🔵 `Low` · ⚪ `Informational` · ❓ `Needs-validation`) *even in a localized report* — the
+> dashboard/`counts` aggregate on it. **(3)** the **dashboard** (overall-risk line + counts table) is
+> mandatory. **(4)** findings get **stable F-IDs** (`F1…`, highest-severity first) + a one-line **Impact**;
+> §3 references the same F-IDs. **(5)** **§4 = Confirmed only · §6 = Needs-validation** (never blur; fill
+> every field) — **Status = the evidence tier** `✅ Confirmed (executed)` > `✅ Confirmed (traced)` >
+> `❓ Needs-validation`, never "executed" for an unrun PoC ([proof-and-confirmation.md](proof-and-confirmation.md)).
+> **(6)** the **`coverage:` counts are required every report**; the full `surface[]`/`controls[]` arrays ride
+> in the header **only on multi-agent/`deep`** (single-skill/`standard` → account for sinks in §7 prose), and
+> **§7 lists examined vs not-examined** ([audit-ledger.md](audit-ledger.md)). **(7)** **match the request's
+> language** for prose; keep the **YAML header, enum words, CWE/OWASP/CVSS ids, and `Status`/`Effort` labels
+> canonical English**. **(8)** write to `.longinus/reports/longinus_YYYYMMDDHHMM.md`
+> ([continuous-audit.md](continuous-audit.md)).
 
 ---
 
 ````markdown
 ---
-longinus_report: "0.5.4"   # = the Longinus skill version (SKILL.md); not a separate schema number
+longinus_report: "0.5.5"   # = the Longinus skill version (SKILL.md); not a separate schema number
 target: <repo name or path>
 commit: <short SHA, or n/a>
 date_utc: <YYYY-MM-DD HH:MM>

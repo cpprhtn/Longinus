@@ -19,42 +19,25 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 | **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS chaining-and-impact.md, all relevant domain `Mechanical scan`s, cross-domain pivot analysis. | Nothing — full coverage. |
 | **continuous / diff** | scheduled / CI re-runs on a watched project | only the **diff since the last report** (`git diff <prior-sha>..HEAD`) + a re-check of prior open findings | unchanged code — audit only what changed, append a delta ([continuous-audit.md](continuous-audit.md)) |
 
-### Quick mode instructions
+### Quick mode
 
-1. Pass the [authorization gate](authorization-and-scope.md).
-2. Identify the stack (Step 1 below).
-3. Run the dependency health check (Step 1.5 below).
-4. Route to the matching domain leaf (or the branch README's `## Mechanical scan` for multi-leaf domains).
-5. In each leaf/branch, read ONLY the `## Mechanical scan` section.
-6. Execute each numbered STEP (grep), apply the SKIP conditions, and report any remaining match using
-   the fixed severity and the leaf's quick-mode output template.
-7. Do NOT perform CVSS scoring, chaining analysis, principle-driven reasoning, the red/blue control-map,
-   or executable PoCs — those are **standard+** disciplines.
-8. Report as a single table: `File:Line | Type | Severity (fixed) | Pattern matched | Fix`. This **provisional
-   table is quick mode's deliverable** — not the full [report-template.md](report-template.md) (that is the
-   standard/deep output). Every quick-mode row is effectively **Needs-validation**; a `standard` re-run is
-   what confirms it (executed/traced) and assigns a real severity.
-
-> ⚠️ **Quick-mode severities are provisional.** The fixed per-pattern severities skip the reachability,
-> CVSS, and chaining checks that prevent inflation ([severity-and-triage.md](severity-and-triage.md)
-> "Mandatory severity gates"). Quick mode trades precision for speed and **may over-report** — treat its
-> output as a triage signal, and **re-run `standard` mode on anything flagged High/Critical before
-> acting on it.**
+Profile (Steps 0–1.5 below) → route → in each leaf read **only `## Mechanical scan`** (grep + the SKIP
+conditions, fixed severities) → emit a single provisional table `File:Line | Type | Severity | Pattern | Fix`
+(every row **Needs-validation**). **No CVSS / chaining / principle-reasoning / red-blue / executable PoC**
+(those are standard+). Quick may over-report — **re-run `standard` on anything High/Critical before acting**
+([severity-and-triage.md](severity-and-triage.md) gates).
 
 ### Standard mode instructions
 
 Default. Profile → **surface sweep (build the ledger)** → route → leaf (full) → PoC → triage → report.
 See "The loop" in [SKILL.md](../SKILL.md) and the surface sweep below.
 
-### Deep mode instructions
+### Deep mode
 
-1. Run standard mode for the primary domain.
-2. Sweep ALL secondary domains (run each domain's `## Mechanical scan`).
-3. Open [chaining-and-impact.md](chaining-and-impact.md) and systematically test cross-domain pivots
-   (web→cloud, app→infra, model→sink).
-4. Run the full severity gates with business-impact overrides ([severity-and-triage.md](severity-and-triage.md)).
-5. Produce a comprehensive report per [reporting-and-disclosure.md](reporting-and-disclosure.md),
-   including the "what was NOT tested" section from [limitations.md](limitations.md).
+Standard for the primary domain **plus**: sweep ALL secondary domains' `## Mechanical scan`s; open
+[chaining-and-impact.md](chaining-and-impact.md) for cross-domain pivots (web→cloud, app→infra, model→sink);
+full severity gates with business-impact overrides; a comprehensive report incl. the "what was NOT tested"
+section ([limitations.md](limitations.md)).
 
 ---
 
@@ -177,7 +160,8 @@ does what *it* is good at on top: semantic triage, chaining, business impact, in
 Each taint result becomes a `surface` row (`reachable: true|false`); each unreached candidate is
 `reachable: unknown` → Needs-validation, never a confident finding.
 
-**Fallback — grep enumeration (set `reachable: unknown` on every hit):**
+**Fallback — grep enumeration — run as ONE batched Bash** (each tool round-trip reprocesses the growing
+context, so don't iterate one grep at a time), **`reachable: unknown` on every hit:**
 
 ```bash
 # Sources — where untrusted input enters
