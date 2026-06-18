@@ -25,6 +25,23 @@ left at "traced" is incomplete — attempt the run. "Traced" is for when executi
 (no DB, secrets, or service to stand up), and you **say which** in the report. Never label "executed" for
 a PoC you didn't actually run — that is the invented-PoC trap wearing a confident face.
 
+## Reject the confident-bug shortcuts
+
+The dominant LLM failure here is the *confident hallucinated bug* — promoting "this looks dangerous" into a
+filed finding. When one of these thoughts shows up, treat it as a stop sign and take the action before the
+finding leaves Needs-validation:
+
+| The shortcut thought | The hole in it | Do this instead |
+|---|---|---|
+| "The shape matches a known-bad pattern, so it's exploitable." | A matching shape is a lead, not a reachable path. | Follow the data from an attacker-controlled source to the sink before believing it. |
+| "It was exploitable in another file/repo, so it is here too." | Every call site has its own guards, callers, and inputs. | Re-prove it *here*, from this site's own context. |
+| "The sink looks unsafe — just file it." | Most unsafe-looking sinks have a guard somewhere upstream. | Locate the guard, or show there is none — [red-blue.md](red-blue.md). |
+| "It's clearly exploitable; I can write the PoC from memory." | A PoC you never ran is how invented findings are born. | Run it (owned/lab), or label it **traced** — never *executed*. |
+| "This is obviously top severity." | Models drift toward over-rating impact. | Score only by *reachable, chained* impact — [severity-and-triage.md](severity-and-triage.md). |
+| "Writing the claim out is a waste of time." | Most weak findings fall apart the second they're stated precisely. | State it in one sentence; if it won't cohere, it isn't a finding. |
+
+Full verify-a-suspected-bug procedure (restate → trace → gate → verdict): [fp-verification.md](fp-verification.md).
+
 ## Authorization governs how far you go (the gate still rules)
 
 Executable proof is bounded by [authorization-and-scope.md](authorization-and-scope.md):

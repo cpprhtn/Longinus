@@ -68,7 +68,8 @@ surface:
 - `reachable: unknown` is honest and common in static mode — it routes the row to **Needs-validation**,
   never to a confident finding (the *sink-without-source* trap in
   [severity-and-triage.md](severity-and-triage.md)).
-- `verdict: not-examined` is the recall signal — these are the rows the report must disclose as gaps.
+- `verdict: not-examined` is the recall signal — un-swept sinks **and deferred multi-domain leaves**
+  ([audit-modes.md](audit-modes.md) Step 4); the report must disclose them as gaps, never imply "clean."
 
 ### 2. `controls` — the expected-control map (Blue)
 

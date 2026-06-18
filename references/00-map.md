@@ -60,6 +60,7 @@ is the *only* file you need to open for that signal.)
 | Run attacker × defender as a real diff (not a footnote); the fix→bypass loop | [red-blue.md](red-blue.md) |
 | Track *coverage / recall* — every source→sink with a verdict; "what did I NOT look at?" | [audit-ledger.md](audit-ledger.md) |
 | Confirm a finding by *running* a benign PoC (executed vs traced); how far the gate lets you go | [proof-and-confirmation.md](proof-and-confirmation.md) |
+| Verify a *specific suspected* finding — is it real, or a false positive? | [fp-verification.md](fp-verification.md) |
 | Emit a report file / scheduled or incremental (diff) re-audit using history | [continuous-audit.md](continuous-audit.md) |
 | Writing the report — the *one fixed shape* every audit must emit (consistency) | [report-template.md](report-template.md) |
 | Don't just fix it — *enforce* it (structural control + CI gate per category) | [enforce-forward.md](enforce-forward.md) |
@@ -82,6 +83,7 @@ Longinus
 │   ├── pattern-triggers.md .............. 🎯 6 generative principles + ⛔ DO-NOT-report FP guards
 │   ├── pattern-catalog.md ............... 🎯 code pattern → vulnerability → leaf lookup tables
 │   ├── proof-and-confirmation.md ....... 🔬 run a benign PoC → Confirmed (executed) vs (traced); gate-bounded
+│   ├── fp-verification.md .............. ✅ verify a suspected finding → TRUE/FALSE positive (restate→trace→gate→verdict)
 │   ├── limitations.md ................... ⚠️ what this skill cannot find (honest limits)
 │   ├── methodology.md ................... engagement lifecycle: recon → test → confirm → triage → report
 │   ├── audit-modes.md ................... 🎚️ quick/standard/deep modes, first-contact profiling, SCA check

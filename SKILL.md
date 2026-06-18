@@ -1,7 +1,8 @@
 ---
 name: longinus
 description: 'This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill that profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.'
-version: 0.5.5
+version: 0.6.0
+allowed-tools: Read Grep Glob Bash Write Edit Task Skill AskUserQuestion WebSearch WebFetch TodoWrite
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -89,7 +90,9 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
    principles in [pattern-triggers.md](references/pattern-triggers.md).
 2. **Recon** (dynamic targets) — enumerate surface: [recon/](references/recon/README.md).
 3. **Test** — open the matching leaf, run its find→confirm steps; default non-destructive.
-4. **Confirm** — reproducible PoC, else the "needs validation" bucket. *Prove it or park it; run it where you can.*
+4. **Confirm** — reproducible PoC, else the "needs validation" bucket. *Prove it or park it; run it where
+   you can.* Adjudicate anything uncertain before filing — restate → trace → control-diff → verdict
+   ([fp-verification.md](references/fp-verification.md)); kill the confident false positive.
 5. **Chain** — escalate every low/medium across a trust boundary; report the **chained** impact
    ([chaining-and-impact.md](references/chaining-and-impact.md)).
 6. **Triage & report** — score ([severity-and-triage.md](references/severity-and-triage.md)) → **emit

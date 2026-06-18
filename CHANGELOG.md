@@ -3,6 +3,20 @@
 Notable changes to **Longinus**, newest first. The report header's `longinus_report` field tracks the
 Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v0.6.0
+
+- **Dedicated false-positive verification (`fp-verification.md`).** A new spine leaf turns the *Confirm*
+  step into an explicit adjudication of a single suspected finding — restate → trace source→sink → control
+  diff → proof → devil's-advocate → TRUE / FALSE / Needs-validation verdict — with batch triage and a
+  cross-boundary chain re-check. Deferred (read only when verifying), so the standard load is unchanged.
+- **A "reject the shortcuts" table** added to `proof-and-confirmation.md` — names the LLM's
+  confident-hallucinated-bug shortcuts and the required action for each, hardening the precision firewall.
+- **`allowed-tools` declared** in `SKILL.md` frontmatter (least-privilege documentation).
+- **Scale discipline made explicit.** A scale guard (bounded tool-call fan-out — one anchored regex,
+  batched subagents) is now stated in the recon pass; multi-domain routing must record **deferred** leaves
+  as `not-examined` coverage gaps instead of silently dropping them. No recall/precision change; carries
+  forward v0.5.5's token posture.
+
 ### v0.5.5
 
 - **Leaner standard mode.** De-duplicated the mode/profiling docs and merged first-contact profiling with

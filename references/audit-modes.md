@@ -60,6 +60,12 @@ steps **mechanically, in order**. Do not skip steps.
 > # secrets: NOT swept here — the always-first secrets branch owns the high-recall secret sweep (its 60-sec triage).
 > # If a grep floods, count first (scan -c "<re>" .), then scope the path or hand off to a taint oracle.
 > ```
+>
+> **Scale guard (the big-repo dry run).** Before any sweep, picture it running against a very large tree:
+> *N* patterns × *M* files must collapse to a **bounded** call count — fold the patterns into one anchored
+> regex and grep once (as `scan()` does), never loop file×pattern. Likewise never spawn a subagent per
+> file or per finding — batch into groups. Unbounded tool-call fan-out reprocesses the growing context on
+> every round-trip; that, not the raw file count, is the token killer.
 
 ### Step 0 — Read the design intent *(standard+; quick skips it)*
 
@@ -191,6 +197,12 @@ apply (a web app that also uses an LLM), prioritize:
 1. `secrets-and-supply-chain/` (always first — `## Mechanical scan` / 60-second triage)
 2. Primary domain (web / api / ai-llm / cloud / mobile)
 3. Secondary domains
+
+> **Defer explicitly — don't silently drop.** A multi-domain target has more applicable leaves than one
+> pass opens. Order them by stakes (the profile's crown jewels / exposure — Step 2), open the highest
+> first, and record every applicable-but-unopened domain as a `not-examined` **deferred** row in the
+> [ledger](audit-ledger.md), named in "What was NOT tested." A deferred domain is a *disclosed coverage
+> gap* loadable on demand — never an implied "clean."
 
 ### Step 5 — For source-code audits, also use the pattern catalog
 
