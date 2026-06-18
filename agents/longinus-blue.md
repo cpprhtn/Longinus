@@ -16,7 +16,8 @@ diffed against. **Read-only — never modify the code.**
 
 1. **Build / refine the Intent Brief** (`references/design-intent.md`): purpose · *designed* trust
    boundaries · stated assumptions · *documented* accepted-risks. If the orchestrator already passed one,
-   refine it.
+   refine it. **Use the project profile's exposure/tenancy** to set which controls to expect —
+   multi-tenant → per-object/tenant authz on every boundary; public-internet → edge auth + rate-limit.
 2. **For every designed trust boundary, emit a `controls[]` row** — the control that *should* guard it
    (from the project's intent **plus** the canonical per-category matrix in
    `references/enforce-forward.md`), and whether it is actually implemented:

@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: 'This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill that profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.'
-version: 0.5.3
+version: 0.5.4
 ---
 
 # Longinus — Offensive Security for Defenders
@@ -73,6 +73,9 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
 | **Mobile app** | [mobile/](references/mobile/README.md) |
 | **Native binary / firmware** | [reverse-engineering/](references/reverse-engineering/README.md) → [binary-exploitation/](references/binary-exploitation/README.md) |
 | **C/C++ / embedded *source*** | [secure-coding-standards.md](references/secure-coding-standards.md) |
+| **CLI tool / script** | [secrets-and-supply-chain/](references/secrets-and-supply-chain/README.md) + trace argv/env → sink (local privilege, supply chain) |
+| **Library / SDK / other form factor** | profile it first ([audit-modes.md](references/audit-modes.md) Step 2) — covers desktop, data/ML, serverless, etc. + the exposure/tenancy axis |
+| **Unsure / none of the above** | profile → the **universal baseline** (secrets + surface sweep + the six principles); never a dead end ([audit-modes.md](references/audit-modes.md) Step 2) |
 | **CTF challenge** | the matching branch (crypto / forensics / pwn / reverse / web) |
 | **Live target needing recon** | [recon/](references/recon/README.md) |
 
@@ -80,7 +83,7 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
 
 ## The loop (expand a phase only when you reach it)
 
-1. **Profile** — form factor, stack, trust boundaries, crown jewels. Build the **surface ledger** (every
+1. **Profile** — build the **project profile** (form factor × stack × **exposure/tenancy × crown jewels** — [audit-modes.md](references/audit-modes.md) Step 2; exposure/tenancy set the severity floor, an unclassified target falls through to the universal baseline). Build the **surface ledger** (every
    source→sink, for coverage) via the surface sweep in [audit-modes.md](references/audit-modes.md) (prefer
    a taint oracle — Semgrep/CodeQL/Joern — else greps). Bring the attacker's lens: the six generative
    principles in [pattern-triggers.md](references/pattern-triggers.md).

@@ -3,6 +3,19 @@
 Notable changes to **Longinus**, newest first. The report header's `longinus_report` field tracks the
 Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v0.5.4
+
+- **Systematic project profile (form factor × exposure × tenancy × crown jewels)** — first-contact
+  profiling is now an orthogonal classification, not a flat form-factor checklist. New form factors
+  (CLI/script, library/SDK, desktop/extension, data/ML pipeline, serverless/webhook) join the app domains,
+  plus a **universal fallback** (generic source → secrets + surface sweep + the six principles) so any
+  target is classified — never a dead end — and out-of-model targets (web3) are flagged, not mis-routed.
+  The **exposure/tenancy axis** now sets the severity floor: multi-tenant → cross-tenant/BOLA is
+  top-priority and rated up; local/single-user → most remote attacks fall away. Wired through **both**
+  paths — the skill (`SKILL.md`) and the multi-agent layer (orchestrator builds + passes the profile; the
+  Red specialists weight provisional severity by it; Blue derives expected controls from tenancy/exposure).
+  Validated profile-only on a local CLI vs a public multi-tenant backend — they classify as opposite poles.
+
 ### v0.5.3
 
 - **`pattern-triggers.md` split for token economy** — the bulky code-pattern → vulnerability **lookup

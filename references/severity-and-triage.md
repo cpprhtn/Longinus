@@ -147,6 +147,20 @@ Each fix is shown as **current → proposed → trade-off** — the perf/UX cost
 change ([reporting-and-disclosure.md](reporting-and-disclosure.md)). The trade-off **never lowers
 severity**: Critical/High get fixed regardless; it only informs *how* to fix, not *whether*.
 
+## Exposure & tenancy set the severity floor
+
+Severity is impact × reachability — and *reachability* is set by the project's **exposure/tenancy** profile
+([audit-modes.md](audit-modes.md) Step 2), so apply it before scoring:
+- **Public-internet** → remote-reachable bugs keep full severity; **internal-only / local** → drop most
+  remote attacks toward Low (but local-privilege, supply-chain, and malicious-insider paths rise).
+- **Multi-tenant** → **cross-tenant / BOLA / isolation breaks are top-priority and rated up** (one tenant
+  reading another's data leans Critical); **single-tenant** → those collapse.
+- **Crown jewels present** (auth / money / PII / secrets) → a reachable bug touching them takes the higher
+  severity band; **nothing at stake** → cap most findings lower.
+
+This is *context, not invention*: it tunes the reachability/impact inputs the gates already use — it never
+manufactures a finding, and never lowers a confirmed sink below its proven impact.
+
 ## Prioritize the fix list (two axes — and stay in your lane)
 
 Order the fix list by **severity** (how bad), and annotate each with **effort** (how cheap to fix:

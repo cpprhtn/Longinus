@@ -114,15 +114,47 @@ Report dependency findings in a separate **"Dependency Health"** section, distin
 application-level findings. Full SCA playbook:
 [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md).
 
-### Step 2 — Identify the form factor (what does it do?)
+### Step 2 — Profile the project (form factor × exposure × what's at stake)
 
-| Signal | Form factor | Jump to |
+Build a short **project profile** — orthogonal axes that route the Red domains *and* set the severity
+floor. A few lines; it runs every audit.
+
+**a) Form factor — what is it? (multi-select):**
+
+| Signal | Form factor | Red domain |
 |---|---|---|
-| HTTP routes/controllers/handlers | **Web app** | `web/` branch |
-| GraphQL schema / REST endpoints without UI | **API** | `api/` branch |
-| `openai` / `anthropic` / `langchain` / model loading code | **AI/LLM app** | `ai-llm/` branch |
-| `*.tf` / `*.yaml` (k8s) / `Dockerfile` only | **Cloud/IaC** | `cloud-and-infra/` branch |
-| `AndroidManifest.xml` / `*.xcodeproj` / `*.swift` / `*.kt` | **Mobile** | `mobile/` branch |
+| HTTP routes/controllers/templates | **Web app** | `web/` |
+| GraphQL/REST endpoints, no UI | **API** | `api/` |
+| `openai`/`anthropic`/`langchain`/model loading | **AI/LLM / agent** | `ai-llm/` |
+| `*.tf` / k8s `*.yaml` / `Dockerfile` | **Cloud / IaC** | `cloud-and-infra/` |
+| `AndroidManifest.xml`/`*.xcodeproj`/`*.swift`/`*.kt` | **Mobile** | `mobile/` |
+| compiled binary / firmware | **Native binary** | `reverse-engineering/` → `binary-exploitation/` |
+| `argparse`/`click`/`cobra`/`commander`, no server | **CLI / script** | secrets + input handling (argv/env, local privilege, supply chain) |
+| published package, no entrypoint (others import it) | **Library / SDK** | "what can a hostile caller / input do" → input→sink + deserialization |
+| Electron/Tauri, or webextension `manifest.json` | **Desktop / browser-extension** | `web/` sinks + local IPC/filesystem + update channel |
+| ETL/Spark/Airflow/notebook/training script | **Data / ML pipeline** | deserialization (pickle/`torch.load`) + data poisoning + secrets in notebooks |
+| Lambda/Cloud-Function/webhook handler | **Serverless / webhook** | `api/` + cloud IAM (the trigger input + the function's role) |
+| **none of the above** | **Generic source (fallback)** | the **universal baseline** (c) — *never a dead end* |
+
+**b) Exposure & stakes — orthogonal to form factor, sets severity (the threat-model axis):**
+- **Exposure:** public-internet · internal-only · local/single-user — *who can reach it?*
+- **Tenancy:** single-tenant · multi-tenant · n/a — *is cross-tenant isolation a boundary?*
+- **Crown jewels:** auth · money/payments · PII · secrets · none — *what's at stake?*
+
+These feed the Intent Brief ([design-intent.md](design-intent.md)) and **adjust severity**
+([severity-and-triage.md](severity-and-triage.md)): multi-tenant → cross-tenant/BOLA is top priority +
+severity↑; public-internet → exposure↑; local/single-user → most remote attacks fall away, local-privilege
++ supply-chain rise.
+
+**c) Universal baseline — the fallback that guarantees coverage.** *Whatever* the form factor — including
+"generic source" — every audit always runs **secrets + dependency/SCA** (first), the **surface sweep**
+(every source→sink, Step 3), and the **six generative principles** ([pattern-triggers.md](pattern-triggers.md),
+which derive vulnerability classes for code with no named playbook). So an unclassified or novel target is
+never uncovered — it falls through to this baseline, and the exposure/stakes axis still sets its threat model.
+
+**d) Recognized but out of operating model.** Deliberately out-of-scope targets (smart contracts / web3,
+and anything outside the source-/app-audit operating model): **say so and point to a specialized tool** —
+flag it as a coverage boundary, never silently mis-route it.
 
 ### Step 3 — Surface sweep: build the ledger (the recall oracle)
 

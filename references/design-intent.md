@@ -16,7 +16,9 @@ Read, in order, whatever exists:
   (OpenAPI/GraphQL schema/`.proto`), and **intent-bearing code comments** (`# only admins reach here`,
   `// trusted input`, `assumes X is pre-validated`).
 
-Produce a short **Intent Brief**:
+The **project profile** ([audit-modes.md](audit-modes.md) Step 2) supplies the structured **exposure ·
+tenancy · crown-jewels** fields — fold them in here rather than re-deriving them. Produce a short
+**Intent Brief**:
 
 1. **Purpose & crown jewels** — what the system is for; what's valuable.
 2. **Trust boundaries *as designed*** — who/what the designer treats as trusted vs untrusted, and where.

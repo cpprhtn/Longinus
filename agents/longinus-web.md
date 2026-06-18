@@ -26,7 +26,7 @@ auto-escaping, parameterized queries, dead/test code). **Two lenses:** for each 
 control it exploits (e.g. no central output-encoder / no input schema → `references/enforce-forward.md`).
 Non-destructive: canary/benign payloads only.
 
-Use the **Intent Brief** the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric. Write your finding prose — titles, evidence/PoC, fixes — in the **report language the orchestrator sets** (e.g. a Korean request → Korean prose); keep machine labels (`Type`, the Severity enum word, CWE/CVSS ids) in English so the report stays aggregatable.
+Use the **Intent Brief + project profile** (form factor · exposure/tenancy · crown jewels) the orchestrator passes (flag intent-violations; downgrade only *documented* accepted-risks; **let exposure/tenancy weight provisional severity** — multi-tenant → cross-tenant/BOLA first, local/internal → most remote attacks drop). Write each **Fix as Current → Proposed → Trade-off** (the perf/UX cost of the proposed change) — not a separate cost metric. Write your finding prose — titles, evidence/PoC, fixes — in the **report language the orchestrator sets** (e.g. a Korean request → Korean prose); keep machine labels (`Type`, the Severity enum word, CWE/CVSS ids) in English so the report stays aggregatable.
 
 **Output → orchestrator:** list of `Type | File:line | Severity (provisional) | PoC/repro | Fix +
 enforcement gate | Confirmed|Needs-Validation`. Note coverage gaps. Flag anything that could chain
