@@ -20,7 +20,10 @@ Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to t
   needs the form factor to route). Step 2's `a/b/c/d` lettering collapses (universal-baseline +
   out-of-scope prose → one note). `pattern-triggers.md` loses its stale "match the tables below"
   pointers — the lookup tables have lived in `pattern-catalog.md` since v0.5.3, so the references now
-  point there. Behaviour + coverage unchanged; fewer re-reads and tool round-trips.
+  point there. Behaviour + coverage unchanged; fewer re-reads and tool round-trips. (Wording later
+  tightened so the **stack-agnostic surface sweep shares the file listing's Bash call** — a BuildStack
+  end-to-end run showed the two were still being split into 2 round-trips because the sweep was wrongly
+  read as waiting on the stack.)
 - **Recon greps made precise + volume-guarded (large-repo token control).** The fallback surface sweep
   now (1) **anchors sink/source patterns to call-shape** — `\bexec\w*\s*\(` / `\bsystem\s*\(` /
   `\beval\s*\(` / `\.query\s*\(` — so it stops matching `executor`/`filesystem`/`evaluate` noise while

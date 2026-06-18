@@ -36,17 +36,20 @@ steps **mechanically, in order**. Do not skip steps.
 > **One batched recon pass feeds Steps 1–3 — don't round-trip.** The steps are listed in *reasoning*
 > order, but their *scans read the same bytes*: one file listing classifies both the **stack** (Step 1)
 > and the **form factor** (Step 2), and one grep set enumerates every **source→sink** for the ledger
-> (Step 3). Each separate tool round-trip reprocesses the growing context — so run the scan **once**
-> (below), fire the SCA tool (Step 1.5) in the same batch once the listing names the stack, then walk
-> Steps 0–5 classifying its output. Prefer a static-analysis oracle over the greps when one is installed
-> (Step 3).
+> (Step 3). Each separate tool round-trip reprocesses the growing context. The sweep greps are
+> **stack-agnostic — they do NOT depend on the listing's output**, so put the listing AND the `scan()`
+> greps in **one Bash call** (don't wait to eyeball the listing before sweeping — that hesitation is the
+> extra round-trip to avoid). Only the **SCA tool choice** (Step 1.5) needs the stack → run that as the
+> single follow-up. Then walk Steps 0–5 classifying the output. Prefer a static-analysis oracle over the
+> greps when one is installed (Step 3).
 >
 > ```bash
 > # Detect stack + form factor — ONE listing (manifests reveal both: package.json, *.tf, Dockerfile,
 > #   requirements.txt/pyproject, go.mod, Cargo.toml, pom.xml/build.gradle, Gemfile, AndroidManifest.xml…)
 > find . -maxdepth 2 -not -path './.git/*' | head -100
 >
-> # Sweep every source→sink for the ledger — reachable: unknown on every hit.
+> # Sweep source→sink (stack-agnostic — runs in THIS SAME call as the listing above, NOT a 2nd pass).
+> # reachable: unknown on every hit.
 > # scan() carries the volume guards to every grep: skip vendored/generated trees + bundles, cap line
 > # width (rg honors .gitignore; these globs also catch committed node_modules/dist/*.min.js it doesn't).
 > scan() { rg -n --max-columns=200 -g '!{node_modules,vendor,dist,build,target,.next,.venv}/**' -g '!*.min.js' -g '!*.lock' "$@"; }
