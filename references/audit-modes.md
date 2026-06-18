@@ -46,12 +46,16 @@ steps **mechanically, in order**. Do not skip steps.
 > #   requirements.txt/pyproject, go.mod, Cargo.toml, pom.xml/build.gradle, Gemfile, AndroidManifest.xml…)
 > find . -maxdepth 2 -not -path './.git/*' | head -100
 >
-> # Sweep every source→sink for the ledger — reachable: unknown on every hit
-> rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .   # sources: HTTP routes
-> rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .               # sources: handlers
-> rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .  # sinks
-> rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .  # controls → Blue map
-> rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .                        # secrets (high-confidence)
+> # Sweep every source→sink for the ledger — reachable: unknown on every hit.
+> # scan() carries the volume guards to every grep: skip vendored/generated trees + bundles, cap line
+> # width (rg honors .gitignore; these globs also catch committed node_modules/dist/*.min.js it doesn't).
+> scan() { rg -n --max-columns=200 -g '!{node_modules,vendor,dist,build,target,.next,.venv}/**' -g '!*.min.js' -g '!*.lock' "$@"; }
+> scan "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .       # sources: HTTP routes
+> scan "def (get|post|put|delete|patch)\b|@api_view|@app\.route" .                 # sources: handlers (\b drops get_user/getter)
+> scan "\bexec\w*\s*\(|\bsystem\s*\(|\beval\s*\(|\.query\s*\(|\.raw\s*\(|innerHTML|pickle\.|torch\.load|requests\.get" .  # sinks — anchored to call-shape: skips executor/filesystem/evaluate, keeps executeQuery/execSync
+> scan "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .   # controls → Blue map (kept broad: auth recall)
+> # secrets: NOT swept here — the always-first secrets branch owns the high-recall secret sweep (its 60-sec triage).
+> # If a grep floods, count first (scan -c "<re>" .), then scope the path or hand off to a taint oracle.
 > ```
 
 ### Step 0 — Read the design intent *(standard+; quick skips it)*
@@ -166,10 +170,11 @@ does what *it* is good at on top: semantic triage, chaining, business impact, in
 Each taint result becomes a `surface` row (`reachable: true|false`); each unreached candidate is
 `reachable: unknown` → Needs-validation, never a confident finding.
 
-**Fallback — grep enumeration:** the greps in the **one batched recon pass** at the top of this section
-already enumerate sources / sinks / controls / secrets in a single round-trip (don't re-run them here —
-each round-trip reprocesses the growing context). Turn each hit into a `surface` row, **`reachable:
-unknown` on every hit** until a taint oracle or a read proves the path.
+**Fallback — grep enumeration:** the `scan()` greps in the **one batched recon pass** at the top of this
+section already enumerate sources / sinks / controls in a single round-trip, anchored to call-shape and
+scoped past vendored/generated trees (don't re-run them here — each round-trip reprocesses the growing
+context). Turn each hit into a `surface` row, **`reachable: unknown` on every hit** until a taint oracle
+or a read proves the path. (Secrets are swept by the always-first secrets branch, not here.)
 
 > **Coverage = `examined / total` sinks.** Record it in the report header ([report-template.md](report-template.md))
 > and name the `not-examined` rows in §7. Recall (did you look?) is the orthogonal twin of precision (are

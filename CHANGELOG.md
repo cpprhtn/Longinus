@@ -21,6 +21,16 @@ Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to t
   out-of-scope prose → one note). `pattern-triggers.md` loses its stale "match the tables below"
   pointers — the lookup tables have lived in `pattern-catalog.md` since v0.5.3, so the references now
   point there. Behaviour + coverage unchanged; fewer re-reads and tool round-trips.
+- **Recon greps made precise + volume-guarded (large-repo token control).** The fallback surface sweep
+  now (1) **anchors sink/source patterns to call-shape** — `\bexec\w*\s*\(` / `\bsystem\s*\(` /
+  `\beval\s*\(` / `\.query\s*\(` — so it stops matching `executor`/`filesystem`/`evaluate` noise while
+  still catching `executeQuery`/`execSync` (recall unchanged, verified on a fixture); (2) routes every
+  grep through a **`scan()` helper** that skips vendored/generated trees (`node_modules`/`vendor`/`dist`/
+  `*.min.js`/`*.lock`) and caps line width (`--max-columns=200`), so a single minified line can't blow up
+  context; (3) **drops the duplicate secrets grep** — the always-first secrets branch already owns the
+  high-recall secret sweep. On large codebases this is where the grep token blow-up lived; on small ones
+  it's a free precision gain with no recall loss. Oracle-first (Semgrep/CodeQL) stays preferred — this
+  hardens the grep fallback.
 
 ### v0.5.4
 
