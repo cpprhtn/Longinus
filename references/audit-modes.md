@@ -14,30 +14,17 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 
 | Mode | When to use | What to read | What to skip |
 |---|---|---|---|
-| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | route → the `## Mechanical scan` section at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring — **and the standard+ disciplines: the surface/control ledger + red/blue control-map ([red-blue.md](red-blue.md)), executable PoC ([proof-and-confirmation.md](proof-and-confirmation.md))**. Use the fixed severities; results are provisional. |
+| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | **minimal detect** (stack + form factor from one listing — Step 1 + Step 2 form factor, enough to route) → the `## Mechanical scan` at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring, **Step 0 design-intent read** — **and the standard+ disciplines: the surface/control ledger + red/blue control-map ([red-blue.md](red-blue.md)), executable PoC ([proof-and-confirmation.md](proof-and-confirmation.md))**. Use the fixed severities; results are provisional. |
 | **standard** | Default. Full audit for one target. | route → leaf (full) → spine docs as needed. | Domains not relevant to this target. |
 | **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS chaining-and-impact.md, all relevant domain `Mechanical scan`s, cross-domain pivot analysis. | Nothing — full coverage. |
 | **continuous / diff** | scheduled / CI re-runs on a watched project | only the **diff since the last report** (`git diff <prior-sha>..HEAD`) + a re-check of prior open findings | unchanged code — audit only what changed, append a delta ([continuous-audit.md](continuous-audit.md)) |
 
-### Quick mode
-
-Profile (Steps 0–1.5 below) → route → in each leaf read **only `## Mechanical scan`** (grep + the SKIP
-conditions, fixed severities) → emit a single provisional table `File:Line | Type | Severity | Pattern | Fix`
-(every row **Needs-validation**). **No CVSS / chaining / principle-reasoning / red-blue / executable PoC**
-(those are standard+). Quick may over-report — **re-run `standard` on anything High/Critical before acting**
-([severity-and-triage.md](severity-and-triage.md) gates).
-
-### Standard mode instructions
-
-Default. Profile → **surface sweep (build the ledger)** → route → leaf (full) → PoC → triage → report.
-See "The loop" in [SKILL.md](../SKILL.md) and the surface sweep below.
-
-### Deep mode
-
-Standard for the primary domain **plus**: sweep ALL secondary domains' `## Mechanical scan`s; open
-[chaining-and-impact.md](chaining-and-impact.md) for cross-domain pivots (web→cloud, app→infra, model→sink);
-full severity gates with business-impact overrides; a comprehensive report incl. the "what was NOT tested"
-section ([limitations.md](limitations.md)).
+**Quick-mode output:** one provisional table — `File:Line | Type | Severity | Pattern | Fix`, every row
+**Needs-validation**. Quick over-reports by design → **re-run `standard` on anything High/Critical before
+acting** ([severity-and-triage.md](severity-and-triage.md) gates). Standard = "The loop" in
+[SKILL.md](../SKILL.md). Deep = standard + [chaining-and-impact.md](chaining-and-impact.md) cross-domain
+pivots (web→cloud, app→infra, model→sink) + business-impact severity overrides + the "what was NOT
+tested" section ([limitations.md](limitations.md)).
 
 ---
 
@@ -46,14 +33,36 @@ section ([limitations.md](limitations.md)).
 When you meet code or a target for the first time and aren't sure which leaf to open, execute these
 steps **mechanically, in order**. Do not skip steps.
 
-### Step 0 — Read the design intent
+> **One batched recon pass feeds Steps 1–3 — don't round-trip.** The steps are listed in *reasoning*
+> order, but their *scans read the same bytes*: one file listing classifies both the **stack** (Step 1)
+> and the **form factor** (Step 2), and one grep set enumerates every **source→sink** for the ledger
+> (Step 3). Each separate tool round-trip reprocesses the growing context — so run the scan **once**
+> (below), fire the SCA tool (Step 1.5) in the same batch once the listing names the stack, then walk
+> Steps 0–5 classifying its output. Prefer a static-analysis oracle over the greps when one is installed
+> (Step 3).
+>
+> ```bash
+> # Detect stack + form factor — ONE listing (manifests reveal both: package.json, *.tf, Dockerfile,
+> #   requirements.txt/pyproject, go.mod, Cargo.toml, pom.xml/build.gradle, Gemfile, AndroidManifest.xml…)
+> find . -maxdepth 2 -not -path './.git/*' | head -100
+>
+> # Sweep every source→sink for the ledger — reachable: unknown on every hit
+> rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .   # sources: HTTP routes
+> rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .               # sources: handlers
+> rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .  # sinks
+> rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .  # controls → Blue map
+> rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .                        # secrets (high-confidence)
+> ```
+
+### Step 0 — Read the design intent *(standard+; quick skips it)*
 
 Before the greps, skim the project's own docs (`CLAUDE.md` / README / `docs/`+ADRs / `SECURITY.md` /
 intent-bearing comments) and build the **Intent Brief**: purpose · *designed* trust boundaries · stated
 assumptions · *documented* accepted-risks. Aim the rest of the audit at the input vectors that
-**violate** it, and reconcile findings against it. See [design-intent.md](design-intent.md).
+**violate** it, and reconcile findings against it. Quick mode defers this — it feeds triage/severity,
+which quick doesn't do. See [design-intent.md](design-intent.md).
 
-### Step 1 — Identify the stack (look for these files)
+### Step 1 — Identify the stack (from the recon listing)
 
 | File / pattern | Stack |
 |---|---|
@@ -102,7 +111,7 @@ application-level findings. Full SCA playbook:
 Build a short **project profile** — orthogonal axes that route the Red domains *and* set the severity
 floor. A few lines; it runs every audit.
 
-**a) Form factor — what is it? (multi-select):**
+**Form factor — what is it? (multi-select):**
 
 | Signal | Form factor | Red domain |
 |---|---|---|
@@ -117,9 +126,9 @@ floor. A few lines; it runs every audit.
 | Electron/Tauri, or webextension `manifest.json` | **Desktop / browser-extension** | `web/` sinks + local IPC/filesystem + update channel |
 | ETL/Spark/Airflow/notebook/training script | **Data / ML pipeline** | deserialization (pickle/`torch.load`) + data poisoning + secrets in notebooks |
 | Lambda/Cloud-Function/webhook handler | **Serverless / webhook** | `api/` + cloud IAM (the trigger input + the function's role) |
-| **none of the above** | **Generic source (fallback)** | the **universal baseline** (c) — *never a dead end* |
+| **none of the above** | **Generic source (fallback)** | the **universal baseline** — *never a dead end* (note below) |
 
-**b) Exposure & stakes — orthogonal to form factor, sets severity (the threat-model axis):**
+**Exposure & stakes — orthogonal to form factor, sets severity (the threat-model axis):**
 - **Exposure:** public-internet · internal-only · local/single-user — *who can reach it?*
 - **Tenancy:** single-tenant · multi-tenant · n/a — *is cross-tenant isolation a boundary?*
 - **Crown jewels:** auth · money/payments · PII · secrets · none — *what's at stake?*
@@ -129,15 +138,12 @@ These feed the Intent Brief ([design-intent.md](design-intent.md)) and **adjust 
 severity↑; public-internet → exposure↑; local/single-user → most remote attacks fall away, local-privilege
 + supply-chain rise.
 
-**c) Universal baseline — the fallback that guarantees coverage.** *Whatever* the form factor — including
-"generic source" — every audit always runs **secrets + dependency/SCA** (first), the **surface sweep**
-(every source→sink, Step 3), and the **six generative principles** ([pattern-triggers.md](pattern-triggers.md),
-which derive vulnerability classes for code with no named playbook). So an unclassified or novel target is
-never uncovered — it falls through to this baseline, and the exposure/stakes axis still sets its threat model.
-
-**d) Recognized but out of operating model.** Deliberately out-of-scope targets (smart contracts / web3,
-and anything outside the source-/app-audit operating model): **say so and point to a specialized tool** —
-flag it as a coverage boundary, never silently mis-route it.
+> **Universal baseline (the fallback) & out-of-scope.** Every audit — *any* form factor, including
+> "generic source" — always runs **secrets + SCA → surface sweep → six principles**
+> ([pattern-triggers.md](pattern-triggers.md)), so a novel/unclassified target is never uncovered; the
+> exposure/stakes axis still sets its threat model. Targets outside the source-/app-audit model (smart
+> contracts / web3, etc.): **say so and point to a specialized tool** — flag the coverage boundary, never
+> silently mis-route.
 
 ### Step 3 — Surface sweep: build the ledger (the recall oracle)
 
@@ -160,23 +166,10 @@ does what *it* is good at on top: semantic triage, chaining, business impact, in
 Each taint result becomes a `surface` row (`reachable: true|false`); each unreached candidate is
 `reachable: unknown` → Needs-validation, never a confident finding.
 
-**Fallback — grep enumeration — run as ONE batched Bash** (each tool round-trip reprocesses the growing
-context, so don't iterate one grep at a time), **`reachable: unknown` on every hit:**
-
-```bash
-# Sources — where untrusted input enters
-rg -n "router\.|app\.(get|post|put|delete)|@(Get|Post|Put|Delete|Patch)" .
-rg -n "def (get|post|put|delete|patch)|@api_view|@app\.route" .
-
-# Sinks — where input becomes dangerous
-rg -n "execute|\.query|\.raw\(|exec|system|eval|innerHTML|pickle|torch\.load|requests\.get" .
-
-# Auth patterns (or lack thereof) — feeds Blue's controls[] map
-rg -n "middleware|guard|@auth|@login_required|verify.*token|isAuthenticated" .
-
-# Secrets (immediate high-confidence findings)
-rg -n "(api[_-]?key|secret|password|token)\s*[:=]" -i .
-```
+**Fallback — grep enumeration:** the greps in the **one batched recon pass** at the top of this section
+already enumerate sources / sinks / controls / secrets in a single round-trip (don't re-run them here —
+each round-trip reprocesses the growing context). Turn each hit into a `surface` row, **`reachable:
+unknown` on every hit** until a taint oracle or a read proves the path.
 
 > **Coverage = `examined / total` sinks.** Record it in the report header ([report-template.md](report-template.md))
 > and name the `not-examined` rows in §7. Recall (did you look?) is the orthogonal twin of precision (are

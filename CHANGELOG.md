@@ -12,6 +12,15 @@ Longinus skill version (see [SKILL.md](SKILL.md)); these entries correspond to t
   depth (chaining / executable-PoC) to the profile's stakes**. Net effect on single-skill `standard` is
   ~neutral — this offsets the v0.5.4 profile's read cost and trims round-trips, *not* a cut below the v0.5.3
   baseline (the real reduction was the v0.5.3 pattern-catalog split). FP discipline unchanged (validated).
+- **Profiling + mode reads de-duplicated (follow-up token trim).** First-contact `Step 1 (stack) +
+  Step 2 (form factor) + Step 3 (surface sweep)` now share **one batched recon pass** (the same file
+  listing + greps, one round-trip) instead of three separate passes. Mode definitions drop from three
+  statements to two — the `audit-modes` quick/standard/deep prose folds into the table. **Quick** no
+  longer reads the Step 0 design-intent docs (standard+ only) and its profiling scope is corrected (it
+  needs the form factor to route). Step 2's `a/b/c/d` lettering collapses (universal-baseline +
+  out-of-scope prose → one note). `pattern-triggers.md` loses its stale "match the tables below"
+  pointers — the lookup tables have lived in `pattern-catalog.md` since v0.5.3, so the references now
+  point there. Behaviour + coverage unchanged; fewer re-reads and tool round-trips.
 
 ### v0.5.4
 

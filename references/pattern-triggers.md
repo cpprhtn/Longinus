@@ -1,15 +1,13 @@
-# 🎯 Pattern triggers & attacker principles (unified lookup)
+# 🎯 Pattern triggers & attacker principles
 
-When auditing source code, use this file two ways:
-- **Pattern-match (mechanical):** scan code, match a row in the tables below, open the
-  referenced leaf for the full find→confirm→fix procedure.
-- **Principle-driven (generative):** walk the six principles over the target; each one
-  tells you *where it must break*, even for patterns not yet in the tables.
-
-> **How to use:** scan the codebase (grep or read), match patterns below, open the
-> referenced leaf. One pattern may appear multiple times across languages — check all
-> that match the target stack. For patterns not in the table, reason from the six
-> principles.
+This is the **principles + false-positive-guard** reference; the code-pattern → leaf
+**lookup tables live in [pattern-catalog.md](pattern-catalog.md)** (split out for lean
+loading). Use this file two ways:
+- **Pattern-match (mechanical):** scan code, match a row in
+  [pattern-catalog.md](pattern-catalog.md), open the referenced leaf for the full
+  find→confirm→fix — then clear it against the FP guards below.
+- **Principle-driven (generative):** walk the six principles below over the target; each
+  one tells you *where it must break*, even for patterns in no table.
 
 ---
 
@@ -80,7 +78,7 @@ endpoints with no auth middleware — is each one genuinely public?
 
 1. At **Profile / threat-model**, walk all six over the target. Most light up for any
    real app.
-2. Each lit principle names the patterns to look for — match them in the tables below.
+2. Each lit principle names the patterns to look for — match them in [pattern-catalog.md](pattern-catalog.md).
 3. Found something? Push it through
    [chaining-and-impact.md](chaining-and-impact.md) — a principle often reveals the
    *next* boundary to cross.
