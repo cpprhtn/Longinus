@@ -30,8 +30,10 @@ cp agents/*.md ~/.claude/agents/
 mkdir -p .claude/agents && cp agents/*.md .claude/agents/
 ```
 
-Restart the session (or run `/agents`) to load them. They **preload the `longinus` skill**
-(`skills: longinus` frontmatter), so the Longinus skill must also be installed
+Restart the session (or run `/agents`) to load them. The **orchestrator preloads the `longinus` skill**
+(`skills: longinus`); the specialists do **not** — they read its reference files on demand from the
+absolute paths the orchestrator passes (with the `Skill` tool as a fallback), which avoids duplicating the
+skill text across every specialist window. The Longinus skill must also be installed
 ([../README.md](../README.md) → Install). Then just ask:
 
 > "Run a Longinus audit on this repo."  →  the **longinus-orchestrator** takes over.

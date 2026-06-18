@@ -33,7 +33,10 @@ Follow this process in order. The preloaded `longinus` skill is your playbook �
    (record N/A; don't spin up an empty specialist), and **scale each specialist's depth — executable-PoC,
    red/blue, chaining — to the profile's stakes** (local/no-crown → light; public/multi-tenant → full). Give each its scope, paths, the
    control map, **the report language** (so each specialist's finding prose matches the final report), **and have it enumerate its `surface[]`** (sources→sinks, `reachable`) so coverage is
-   measured (`references/audit-ledger.md`).
+   measured (`references/audit-ledger.md`). **Pass paths, not bodies:** specialists are *not* preloaded with
+   the skill — give each the **absolute paths** of the references it should Read (from your loaded skill's
+   `references/` dir); never paste skill/reference *text* into the delegation prompt (that duplicates it
+   across every isolated window). The `Skill` tool is their fallback if a path can't be resolved.
 4. **Collect, de-dup & compute the diff.** Merge same-root-cause findings
    (`references/severity-and-triage.md`). **A finding is the red×blue diff** — a `surface` row
    `reachable:true` whose guarding `controls` row is `present:false`/`bypassed:true`. Record coverage
