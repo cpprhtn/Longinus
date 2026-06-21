@@ -57,7 +57,9 @@ still works, just heavier. **Discover with tools, triage with the LLM.**
 | **SCA** — `pip-audit` · `npm audit` · `osv-scanner` · `trivy` · `govulncheck` · `cargo-audit` | dependency **CVEs** (see *Dependency CVE checks* below) | real CVEs from a database, never guessed |
 
 None are required — Longinus is read-only and degrades gracefully — but a tool-rich environment (e.g. CI)
-makes each audit lighter and tighter.
+makes each audit lighter and tighter. If a tool is missing, use the
+[tool preflight](references/tooling/tool-preflight.md) to record `ready|docker|missing|blocked` and run
+Docker fallbacks where available.
 
 ## Usage
 
@@ -180,6 +182,7 @@ This repo is meant to be **traversed, not read front-to-back.** Start at the ent
 | You want to… | Go to |
 |---|---|
 | **Run it** | [docs/usage.md](docs/usage.md) → [SKILL.md](SKILL.md) |
+| Run a cheap first pass on a pre-launch / vibe-coded repo | [references/basic-vibe-triage.md](references/basic-vibe-triage.md) |
 | Understand **why it exists** | [docs/why.md](docs/why.md) |
 | See **who it's for / what you get** | [docs/who-its-for.md](docs/who-its-for.md) |
 | Read the **ethics & authorization** rules | [docs/ethics.md](docs/ethics.md) ⛔ read before active testing |
@@ -208,6 +211,7 @@ Longinus/
 └── references/                     ← the domain tree (the playbooks)
     ├── 00-map.md                   ← master navigable tree + signal→file jump table
     ├── authorization-and-scope.md                            ← ⛔ authorization gate
+    ├── basic-vibe-triage.md                                  ← cheap first pass for default creds/debug/admin surfaces
     ├── pattern-triggers.md                                   ← 🎯 attacker principles + ⛔ DO-NOT-report FP guards
     ├── pattern-catalog.md                                    ← 🎯 code pattern → vulnerability → leaf lookup tables
     ├── limitations.md                                        ← ⚠️ what this skill cannot find (honest limits)

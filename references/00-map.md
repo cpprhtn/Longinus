@@ -23,13 +23,18 @@ is the *only* file you need to open for that signal.)
 
 | What you're looking at / the signal | Open only this |
 |---|---|
+| Unsure where to start in a pre-launch/vibe-coded repo; want the cheap high-yield pass | [basic-vibe-triage.md](basic-vibe-triage.md) |
 | `id`/UUID/filename in the URL or body; can I read *another user's* object? | [web/access-control.md](web/access-control.md) |
-| Admin/privileged action reachable by a normal/no-auth user | [web/access-control.md](web/access-control.md) · [api/README.md](api/README.md) |
+| Admin/privileged action reachable by a normal/no-auth user | [web/access-control.md](web/access-control.md) · [api/bola-bfla.md](api/bola-bfla.md) |
 | Input lands in SQL / a shell / a template / XML parser | [web/injection.md](web/injection.md) |
 | My input is reflected into the HTML/JS of the page | [web/xss.md](web/xss.md) |
 | A param/feature where the **server fetches a URL** (webhook, import, preview, PDF) | [web/ssrf.md](web/ssrf.md) |
 | Login / password reset / session cookie / brute-force | [web/auth-and-session.md](web/auth-and-session.md) |
-| A **JWT**, OAuth `redirect_uri`/`state`, SAML, SSO, MFA | [identity/README.md](identity/README.md) |
+| Default/seeded creds (`admin/admin`, `admin/1234`), hard-coded login branch, debug login-as | [web/auth-and-session.md](web/auth-and-session.md) |
+| A **JWT**, `alg`, `kid`, weak JWT secret, token claims trusted | [identity/jwt.md](identity/jwt.md) |
+| OAuth/OIDC `redirect_uri`/`state`/PKCE, account linking, issuer/audience mixup | [identity/oauth-oidc.md](identity/oauth-oidc.md) |
+| SAML assertion/signature/conditions | [identity/saml.md](identity/saml.md) |
+| MFA/OTP/passkey/backup-code/remember-device bypass | [identity/mfa.md](identity/mfa.md) |
 | State-changing request with no anti-CSRF token | [web/csrf.md](web/csrf.md) |
 | File upload, or `?file=`/path params, `../`, LFI/RFI, zip | [web/file-upload-and-path.md](web/file-upload-and-path.md) |
 | A serialized blob (Java `rO0`, PHP `O:`, pickle, .NET, `ViewState`) | [web/deserialization.md](web/deserialization.md) |
@@ -37,9 +42,12 @@ is the *only* file you need to open for that signal.)
 | Missing security headers, permissive CORS, debug on, `.git`/`.env` exposed, verbose errors | [web/misconfiguration.md](web/misconfiguration.md) |
 | Front-end+back-end/CDN/proxy chain; requests "bleed" between users; poison a shared cache | [web/request-smuggling-and-desync.md](web/request-smuggling-and-desync.md) |
 | `__proto__`/`constructor`/`prototype` in JSON or `a[__proto__][x]` query; JS deep-merge; Node app | [web/prototype-pollution.md](web/prototype-pollution.md) |
-| GraphQL introspection, BOLA/BFLA, mass assignment, rate limits | [api/README.md](api/README.md) |
+| API object/function auth: BOLA/BFLA, object ID swap, admin function as normal user | [api/bola-bfla.md](api/bola-bfla.md) |
+| API mass assignment or full object serialization | [api/mass-assignment-data-exposure.md](api/mass-assignment-data-exposure.md) |
+| GraphQL introspection/batching/depth, large limits, shadow API versions | [api/graphql-resource-limits.md](api/graphql-resource-limits.md) |
 | Hard-coded key/token/password; secret in git/CI/JS bundle | [secrets-and-supply-chain/secret-detection.md](secrets-and-supply-chain/secret-detection.md) |
-| A dependency — known CVE, typo/hallucinated package, lockfile/CI | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) |
+| A dependency — known CVE, typo/hallucinated package, lockfile | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) |
+| GitHub Actions / CI: `pull_request_target`, untrusted `${{ }}` in shell, mutable actions, self-hosted runners | [secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md) |
 | Prompt injection, jailbreak, system-prompt leak, model output → a sink | [ai-llm/prompt-injection.md](ai-llm/prompt-injection.md) |
 | Agent/tool/MCP over-permission, RAG/vector leakage, token/cost DoS | [ai-llm/agentic-and-mcp.md](ai-llm/agentic-and-mcp.md) |
 | Loading a model file (`torch.load`/pickle/`.pt`/`.h5`), HF `trust_remote_code`, poisoned weights | [ai-llm/model-supply-chain.md](ai-llm/model-supply-chain.md) |
@@ -56,6 +64,7 @@ is the *only* file you need to open for that signal.)
 | Build a specific impact chain — ATO · cloud takeover · RCE · mass exfil · AI-agent | [chaining-and-impact.md](chaining-and-impact.md) → [chaining/](chaining/account-takeover.md) |
 | Need to score a finding / write the report | [severity-and-triage.md](severity-and-triage.md) · [reporting-and-disclosure.md](reporting-and-disclosure.md) |
 | Picking audit depth (quick/standard/deep), first-contact profiling, dependency/SCA check | [audit-modes.md](audit-modes.md) |
+| Local tools may be missing; want Semgrep/gitleaks/trivy Docker fallback | [tooling/tool-preflight.md](tooling/tool-preflight.md) |
 | Understand the project's *design intent* first / "is this finding deliberate?" | [design-intent.md](design-intent.md) |
 | Run attacker × defender as a real diff (not a footnote); the fix→bypass loop | [red-blue.md](red-blue.md) |
 | Track *coverage / recall* — every source→sink with a verdict; "what did I NOT look at?" | [audit-ledger.md](audit-ledger.md) |
@@ -80,6 +89,7 @@ Longinus
 │   ├── red-blue.md ...................... ⚔️ bidirectional method: Blue control-map × Red sinks → the diff is the flaw
 │   ├── audit-ledger.md ................. 📒 the shared surface[]/controls[] ledger — coverage/recall + the red×blue diff
 │   ├── attacker-mindset.md .............. 🧠 → merged into pattern-triggers.md (redirect stub)
+│   ├── basic-vibe-triage.md ............. fast pre-leaf sweep for default creds, debug/admin surfaces, weak secrets
 │   ├── pattern-triggers.md .............. 🎯 6 generative principles + ⛔ DO-NOT-report FP guards
 │   ├── pattern-catalog.md ............... 🎯 code pattern → vulnerability → leaf lookup tables
 │   ├── proof-and-confirmation.md ....... 🔬 run a benign PoC → Confirmed (executed) vs (traced); gate-bounded
@@ -118,15 +128,23 @@ Longinus
 │   └── prototype-pollution.md ........... ADVANCED: client/server-side prototype pollution → XSS/RCE/SSRF
 │
 ├── 🔌 api/ .............................. APIs  (OWASP API Security Top 10:2023)
-│   └── README.md ........................ REST/GraphQL/gRPC: BOLA/BFLA, mass-assignment, rate/limit, inventory
+│   ├── README.md ........................ branch router + consolidated quick scan
+│   ├── bola-bfla.md ..................... object/function authorization: BOLA/BFLA
+│   ├── mass-assignment-data-exposure.md . property authz: mass assignment + excessive data exposure
+│   └── graphql-resource-limits.md ....... GraphQL/resource limits, inventory, unsafe upstream consumption
 │
 ├── 🪪 identity/ ......................... AUTHN/AUTHZ PROTOCOLS
-│   └── README.md ........................ OAuth2/OIDC, JWT, SAML, sessions, MFA, password reset, SSO chains
+│   ├── README.md ........................ branch router + consolidated quick scan
+│   ├── jwt.md ........................... JWT alg/signature/claim validation
+│   ├── oauth-oidc.md .................... OAuth/OIDC redirects, state, PKCE, token mixups
+│   ├── saml.md .......................... SAML assertion/signature/condition validation
+│   └── mfa.md ........................... MFA/OTP/passkey/step-up enforcement
 │
 ├── 🔑 secrets-and-supply-chain/ ......... SECRETS & DEPENDENCIES  (A03 + the #1 vibe-coding risk)
 │   ├── README.md ........................ branch triage; why this is first for AI-generated code
 │   ├── secret-detection.md .............. hard-coded keys/tokens, git history, env/CI leakage, rotation
-│   └── dependency-supply-chain.md ....... SCA/CVEs, slopsquatting/typosquatting, lockfiles, SBOM, SLSA, CI/CD
+│   ├── dependency-supply-chain.md ....... SCA/CVEs, slopsquatting/typosquatting, lockfiles, SBOM, SLSA
+│   └── ci-cd-attacks.md ................. pwn-request, script injection, cache poisoning, mutable actions, runners
 │
 ├── 🤖 ai-llm/ ........................... LLM / AGENT / RAG APPS  (OWASP LLM Top 10:2025)
 │   ├── README.md ........................ LLM Top 10:2025 → leaf map; how to red-team an AI feature
@@ -157,7 +175,8 @@ Longinus
 │   └── README.md ........................ file carving, memory (Volatility), pcap, disk, stego, log analysis
 │
 └── 🧰 tooling/ .......................... CURATED TOOL CATALOG
-    └── README.md ........................ best-in-class tools per branch, with safe-usage notes
+    ├── README.md ........................ best-in-class tools per branch, with safe-usage notes
+    └── tool-preflight.md ................ ready/docker/missing/blocked status + Docker fallbacks
 ```
 
 \* SSRF is its own leaf for depth, though OWASP Top 10:2025 folds it into A01 (Broken Access Control).

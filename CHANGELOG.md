@@ -3,6 +3,30 @@
 Notable changes to Longinus, newest first. The report header's `longinus_report` field tracks the skill
 version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v0.7.0
+
+- **Cheap first-pass triage for vibe-coded/pre-launch repos.** Added `basic-vibe-triage.md` and wired it
+  into the skill, web quick scan, README, and map so default credentials, weak secrets, debug/admin
+  surfaces, client-controlled privilege fields, and exposed artifacts are caught before opening deeper
+  leaves.
+- **API and identity branches split into token-light leaves.** Replaced the large API/identity READMEs
+  with routers and added focused leaves for BOLA/BFLA, mass assignment/data exposure, GraphQL/resource
+  limits, JWT, OAuth/OIDC, SAML, and MFA. Pattern catalog and agents now route directly to the relevant
+  leaf instead of loading the whole branch.
+- **CI/CD attack coverage.** Added `secrets-and-supply-chain/ci-cd-attacks.md` for pwn-request,
+  workflow script injection, cache poisoning, mutable actions/images, and self-hosted runner exposure;
+  linked it from the supply-chain branch, pattern catalog, map, agents, and enforce-forward matrix.
+- **Tool preflight and coverage hardening.** Added `tooling/tool-preflight.md` with
+  `ready|docker|missing|blocked` scanner status, Docker fallback guidance, and coverage-gap reporting.
+  Added a zero-denominator guard so targets with obvious attack surface cannot produce a clean report
+  from `coverage.total = 0`.
+- **Report and agent consistency.** Bumped the report header version to `0.7.0`, kept §4 confirmed-only,
+  and updated orchestrator/specialists to pass path-based leaf references, surface rows, and the new
+  routing structure.
+- **C/C++ resource-exhaustion coverage.** Kept the accepted memory-leak/resource-exhaustion guidance:
+  per-request/per-connection leaks or fd leaks on unauthenticated network daemons are filed as remote
+  DoS, including cross-function allocation lifetime tracing.
+
 ### v0.6.1
 
 - **Specialist subagents no longer preload the skill.** Removed `skills: longinus` from the six domain

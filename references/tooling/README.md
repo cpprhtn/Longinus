@@ -8,6 +8,10 @@ explain; a confirmed manual finding beats a wall of unreviewed scanner hits.
 > ⛔ Many of these are dual-use. Use them only on targets you own or are authorized to test
 > ([../authorization-and-scope.md](../authorization-and-scope.md)).
 
+Before a serious audit, run [tool-preflight.md](tool-preflight.md) to record each scanner as
+`ready|docker|missing|blocked`. Docker fallbacks keep deterministic scanners available and reduce LLM
+guesswork; missing/blocked tools become coverage gaps.
+
 ## Recon & discovery → [../recon/](../recon/README.md)
 - **Subdomains/assets:** `subfinder`, `amass`, `assetfinder`, `crt.sh`, `dnsx`, `puredns`/`shuffledns`,
   `gotator`/`dnsgen` (permutations).

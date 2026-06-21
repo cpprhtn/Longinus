@@ -14,7 +14,7 @@ Default is **standard** unless the user specifies otherwise ("run a quick securi
 
 | Mode | When to use | What to read | What to skip |
 |---|---|---|---|
-| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | **minimal detect** (stack + form factor from one listing — Step 1 + Step 2 form factor, enough to route) → the `## Mechanical scan` at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring, **Step 0 design-intent read** — **and the standard+ disciplines: the surface/control ledger + red/blue control-map ([red-blue.md](red-blue.md)), executable PoC ([proof-and-confirmation.md](proof-and-confirmation.md))**. Use the fixed severities; results are provisional. |
+| **quick** | Fast first pass; small on-device models (≈11B); CI gate checks | **minimal detect** (stack + form factor from one listing — Step 1 + Step 2 form factor, enough to route) → [basic-vibe-triage.md](basic-vibe-triage.md) → the `## Mechanical scan` at the top of each relevant leaf. ONE leaf per domain (for multi-leaf domains like web/API/identity, use the branch README's consolidated `## Mechanical scan`). | All "Deep analysis" sections, principle-driven reasoning, chaining-and-impact.md, CVSS scoring, **Step 0 design-intent read** — **and the standard+ disciplines: the surface/control ledger + red/blue control-map ([red-blue.md](red-blue.md)), executable PoC ([proof-and-confirmation.md](proof-and-confirmation.md))**. Use the fixed severities; results are provisional. |
 | **standard** | Default. Full audit for one target. | route → leaf (full) → spine docs as needed. | Domains not relevant to this target. |
 | **deep** | Comprehensive formal audit, multi-domain sweep. | Everything in standard PLUS chaining-and-impact.md, all relevant domain `Mechanical scan`s, cross-domain pivot analysis. | Nothing — full coverage. |
 | **continuous / diff** | scheduled / CI re-runs on a watched project | only the **diff since the last report** (`git diff <prior-sha>..HEAD`) + a re-check of prior open findings | unchanged code — audit only what changed, append a delta ([continuous-audit.md](continuous-audit.md)) |
@@ -89,6 +89,13 @@ which quick doesn't do. See [design-intent.md](design-intent.md).
 | `*.tf` / `terraform/` | IaC (Terraform) |
 | `.env` / `config/` with secrets | **Check for secrets immediately** |
 
+### Step 1.25 — Tool preflight (standard+ when tools are uncertain)
+
+If local tools may be missing, run the lightweight status check in
+[tooling/tool-preflight.md](tooling/tool-preflight.md) and record `ready|docker|missing|blocked`.
+Use Docker fallbacks for deterministic scanners when available; disclose missing/blocked scanners as
+coverage gaps, never as clean results.
+
 ### Step 1.5 — Dependency health check / SCA (after stack, before form factor)
 
 Run the appropriate SCA tool for the stack from Step 1:
@@ -152,7 +159,7 @@ severity↑; public-internet → exposure↑; local/single-user → most remote 
 + supply-chain rise.
 
 > **Universal baseline (the fallback) & out-of-scope.** Every audit — *any* form factor, including
-> "generic source" — always runs **secrets + SCA → surface sweep → six principles**
+> "generic source" — always runs **secrets + SCA → basic vibe triage → surface sweep → six principles**
 > ([pattern-triggers.md](pattern-triggers.md)), so a novel/unclassified target is never uncovered; the
 > exposure/stakes axis still sets its threat model. Targets outside the source-/app-audit model (smart
 > contracts / web3, etc.): **say so and point to a specialized tool** — flag the coverage boundary, never
@@ -189,6 +196,11 @@ or a read proves the path. (Secrets are swept by the always-first secrets branch
 > and name the `not-examined` rows in §7. Recall (did you look?) is the orthogonal twin of precision (are
 > you sure?) — see [audit-ledger.md](audit-ledger.md). The `auth pattern` hits seed **Blue's**
 > expected-control map for the [red×blue diff](red-blue.md).
+
+**Zero-denominator guard.** If the project clearly has attackable inputs or privileged operations, but
+the sweep produces `coverage.total = 0`, the audit is incomplete, not clean. Narrow the path, rerun the
+sweep with a taint oracle or scoped grep, and if it still cannot enumerate sinks, report "surface
+enumeration failed / not tested" in §7 instead of claiming no findings.
 
 ### Step 4 — Route to the correct leaf
 

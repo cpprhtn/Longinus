@@ -25,6 +25,13 @@ rg -n "httpOnly.*false|secure.*false|sameSite.*none|session.*secret.*=.*\"|maxAg
 - **SKIP if:** path contains `/test/`
 - **FINDING if not skipped:** Type: Insecure Session Config | Severity: Medium | Fix: Set httpOnly=true, secure=true, sameSite=strict; use strong random secret
 
+**STEP 3 — Default / seeded / hard-coded credentials**
+```bash
+rg -n -i "(admin|root|test|demo).{0,24}(admin|1234|password|pass|changeme)|password.{0,12}['\"](admin|1234|password|test|demo|changeme)['\"]|create_superuser|is_superuser|seed.*admin|demo.*user" .
+```
+- **SKIP if:** docs/tests/fixtures only, or clearly fake placeholders not shipped in production
+- **FINDING if not skipped:** Type: Default/Seeded Credentials | Severity: High | Fix: remove seeded creds from production; force unique bootstrap password and rotation
+
 **Output template (quick mode):**
 ```
 | File:Line | Type | Severity | Pattern | Fix |
@@ -46,7 +53,8 @@ verification, session cookies/tokens, account recovery, and any "act as" / imper
 - **Brute force / credential stuffing:** no rate limit or lockout on login/MFA/reset. Confirm with a
   small, in-scope, throttled test (don't actually spray real accounts). Fix: rate limiting, lockout/
   backoff, CAPTCHA on anomaly, MFA, IP/device intelligence, breach-password blocking.
-- **Default/seeded creds**, debug "login as" endpoints, and auth bypass via parameter (`?admin=true`,
+- **Default/seeded creds** (`admin/admin`, `admin/1234`, demo users in prod), debug "login as" endpoints,
+  and auth bypass via parameter (`?admin=true`,
   `role` in body — see [access-control.md](access-control.md)).
 
 ## 2. Session management
@@ -90,10 +98,11 @@ This flow is a frequent takeover vector — test it hard:
 ## Static signs (code audit)
 
 ```bash
-rg -n "session\.regenerate|req\.session\.id|set_cookie|SESSION|jwt\.sign|bcrypt|argon2|pbkdf2|md5|sha1" -i .
+rg -n "session\.regenerate|req\.session\.id|set_cookie|SESSION|jwt\.sign|bcrypt|argon2|pbkdf2|md5|sha1|create_superuser|seed.*admin|demo.*user" -i .
 ```
 Red flags: passwords hashed with MD5/SHA1/unsalted or fast hashes; no session regeneration on login;
-reset URL built from `req.headers.host`; tokens with no expiry; secrets/JWT keys hard-coded.
+reset URL built from `req.headers.host`; tokens with no expiry; secrets/JWT keys hard-coded; default
+or seeded credentials reachable in production.
 
 ## How to fix (summary)
 

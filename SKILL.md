@@ -1,7 +1,7 @@
 ---
 name: longinus
 description: 'This skill should be used when the user asks to "run a security audit", "find vulnerabilities", "pentest this", "do a bug bounty", "secure my app", "review my code for security", "check for CVEs/secrets/injection", "red team my LLM/agent", or mentions "Longinus / 롱기누스 / 보안 점검". Longinus is a security testing & detection skill that profiles a target (source repo, web app, API, LLM/agent app, mobile app, binary, or cloud config), gates on authorization, jumps to the relevant offensive playbook in a domain tree, probes for weaknesses, then reports triaged findings with proof-of-concept and concrete fixes.'
-version: 0.6.1
+version: 0.7.0
 allowed-tools: Read Grep Glob Bash Write Edit Task Skill AskUserQuestion WebSearch WebFetch TodoWrite
 ---
 
@@ -65,10 +65,11 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
 
 | Target | Start at |
 |---|---|
-| **My own repo (pre-launch)** | [secrets-and-supply-chain/](references/secrets-and-supply-chain/README.md) (60-sec triage), then the rows below |
+| **My own repo (pre-launch)** | [secrets-and-supply-chain/](references/secrets-and-supply-chain/README.md) (60-sec triage) → [basic-vibe-triage.md](references/basic-vibe-triage.md), then the rows below |
 | **Web app** | [web/](references/web/README.md) |
 | **API (REST/GraphQL)** | [api/](references/api/README.md) |
-| **Login / OAuth / JWT / SSO** | [identity/](references/identity/README.md) |
+| **Login / password reset / session cookie / brute force** | [web/auth-and-session.md](references/web/auth-and-session.md) |
+| **JWT / OAuth / OIDC / SAML / MFA / SSO** | [identity/](references/identity/README.md) |
 | **LLM / agent / RAG** | [ai-llm/](references/ai-llm/README.md) |
 | **Cloud / Terraform / k8s** | [cloud-and-infra/](references/cloud-and-infra/README.md) |
 | **Mobile app** | [mobile/](references/mobile/README.md) |
@@ -76,7 +77,7 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
 | **C/C++ / embedded *source*** | [secure-coding-standards.md](references/secure-coding-standards.md) |
 | **CLI tool / script** | [secrets-and-supply-chain/](references/secrets-and-supply-chain/README.md) + trace argv/env → sink (local privilege, supply chain) |
 | **Library / SDK / other form factor** | profile it first ([audit-modes.md](references/audit-modes.md) Step 2) — covers desktop, data/ML, serverless, etc. + the exposure/tenancy axis |
-| **Unsure / none of the above** | profile → the **universal baseline** (secrets + surface sweep + the six principles); never a dead end ([audit-modes.md](references/audit-modes.md) Step 2) |
+| **Unsure / none of the above** | profile → the **universal baseline** (secrets + [basic-vibe-triage.md](references/basic-vibe-triage.md) + surface sweep + the six principles); never a dead end ([audit-modes.md](references/audit-modes.md) Step 2) |
 | **CTF challenge** | the matching branch (crypto / forensics / pwn / reverse / web) |
 | **Live target needing recon** | [recon/](references/recon/README.md) |
 
@@ -84,10 +85,12 @@ path, a serialized cookie)? Skip this — use the **signal→file jump table** a
 
 ## The loop (expand a phase only when you reach it)
 
-1. **Profile** — build the **project profile** (form factor × stack × **exposure/tenancy × crown jewels** — [audit-modes.md](references/audit-modes.md) Step 2; exposure/tenancy set the severity floor, an unclassified target falls through to the universal baseline). Build the **surface ledger** (every
+1. **Profile** — build the **project profile** (form factor × stack × **exposure/tenancy × crown jewels** — [audit-modes.md](references/audit-modes.md) Step 2; exposure/tenancy set the severity floor, an unclassified target falls through to the universal baseline). For owned/pre-launch repos, run the basic triage before deep leaves. Build the **surface ledger** (every
    source→sink, for coverage) via the surface sweep in [audit-modes.md](references/audit-modes.md) (prefer
    a taint oracle — Semgrep/CodeQL/Joern — else greps). Bring the attacker's lens: the six generative
-   principles in [pattern-triggers.md](references/pattern-triggers.md).
+   principles in [pattern-triggers.md](references/pattern-triggers.md). If the target clearly has
+   attackable sources/sinks but `coverage.total` stays `0`, treat the audit as incomplete: rerun the
+   surface sweep with a scoped grep/oracle and disclose the failure instead of emitting a clean report.
 2. **Recon** (dynamic targets) — enumerate surface: [recon/](references/recon/README.md).
 3. **Test** — open the matching leaf, run its find→confirm steps; default non-destructive.
 4. **Confirm** — reproducible PoC, else the "needs validation" bucket. *Prove it or park it; run it where

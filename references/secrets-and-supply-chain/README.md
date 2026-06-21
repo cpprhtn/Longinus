@@ -24,7 +24,8 @@ Why AI code is especially exposed:
 | Leaf | Covers |
 |---|---|
 | [secret-detection.md](secret-detection.md) | hard-coded keys/tokens/passwords, git history, env/CI/log leakage, validation, rotation |
-| [dependency-supply-chain.md](dependency-supply-chain.md) | known-CVE deps (SCA), slopsquatting/typosquatting, lockfiles, integrity, SBOM, SLSA, CI/CD & build security |
+| [dependency-supply-chain.md](dependency-supply-chain.md) | known-CVE deps (SCA), slopsquatting/typosquatting, lockfiles, integrity, SBOM, SLSA |
+| [ci-cd-attacks.md](ci-cd-attacks.md) | pwn-request, CI script injection, cache poisoning, mutable actions/images, self-hosted runners |
 
 ## Mechanical scan (60-second triage)
 
@@ -38,6 +39,8 @@ git ls-files | rg -n "\.env|\.pem|\.p12|\.keystore|credentials|id_rsa|\.npmrc|\.
 # 4) known-vulnerable dependencies
 npm audit --omit=dev ; pip-audit ; osv-scanner -r . ; trivy fs .
 # 5) hallucinated/typosquatted packages — verify every dependency actually exists & is the real one
+# 6) CI/CD attack surface
+rg -n -i "pull_request_target|workflow_run|actions/github-script|run:.*\$\{\{|uses: .*@(main|master|v[0-9]+)|actions/cache|self-hosted|permissions:" .github .gitlab-ci.yml Jenkinsfile azure-pipelines.yml 2>/dev/null
 ```
 
 Anything live found in 1–3 is often **Critical** — treat as an active incident: rotate immediately,
@@ -55,6 +58,8 @@ possibly already scraped by bots that watch public pushes. **The only fix is to 
 
 - **Self-audit (vibe coding):** run the 60-second triage first thing; it usually finds the worst issue
   in the repo before you test a single endpoint.
+- **CI/CD:** if `.github/workflows` or another pipeline config exists, open
+  [ci-cd-attacks.md](ci-cd-attacks.md) before dependency deep-dives.
 - **Bug bounty / recon:** leaked secrets in the org's public repos/JS bundles are a top passive find
   (see [../recon/osint.md](../recon/osint.md)) — but *validate carefully and disclose*; don't use
   found creds to access systems (that exceeds authorization — see

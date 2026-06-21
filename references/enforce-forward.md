@@ -49,6 +49,7 @@ and the **gate** (with a runnable template) that enforces it.
 | **Cloud / IaC** ([cloud-and-infra/](cloud-and-infra/README.md)) | **CIS Benchmarks** + well-architected | least-privilege IAM + **IMDSv2** + private-by-default | **checkov/tfsec + OPA/conftest** policy gate → [templates/policy-as-code.md](templates/policy-as-code.md) |
 | **AI / LLM** ([ai-llm/](ai-llm/README.md)) | OWASP LLM Top 10 + **NIST AI RMF** + ATLAS | **output validation** + tool-arg allowlist + tenant isolation + human-in-the-loop | output-validation layer + **model-scan** (modelscan) gate → [templates/validation-layer.md](templates/validation-layer.md) · [templates/ci-gates.md](templates/ci-gates.md) |
 | **Secrets / Supply chain** ([secrets-and-supply-chain/](secrets-and-supply-chain/README.md)) | **SLSA** + NIST **SSDF** + OpenSSF Scorecard | no secrets in code + pinned deps + build provenance | **gitleaks pre-commit + SCA gate + lockfile pin** → [templates/pre-commit-and-secrets.md](templates/pre-commit-and-secrets.md) · [templates/ci-gates.md](templates/ci-gates.md) |
+| **CI/CD** ([secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md)) | SLSA + OpenSSF Scorecard + GitHub Actions hardening | least-privilege workflow tokens + pinned actions/images + isolated runners + trust-partitioned caches | workflow policy gate (`permissions`, SHA pins, no privileged untrusted PR code) → [templates/ci-gates.md](templates/ci-gates.md) |
 | **Crypto** ([cryptography/](cryptography/README.md)) | NIST FIPS / SP 800-57 | a **vetted library**, no roll-your-own, strong primitives | a Semgrep "ban weak crypto" rule in CI → [templates/ci-gates.md](templates/ci-gates.md) |
 | **C/C++ / embedded** ([secure-coding-standards.md](secure-coding-standards.md)) | **CERT-C/C++ + MISRA + ISO 26262** | bounded APIs + checked arithmetic + sanitizers | **cppcheck/clang-tidy gate + ASan/UBSan** in CI → [templates/ci-gates.md](templates/ci-gates.md) |
 
@@ -68,6 +69,9 @@ it's just generic DevSecOps noise:
   [ai-llm/model-supply-chain.md](ai-llm/model-supply-chain.md)
 - **leaked secret → account/cloud takeover** ⟵ pre-commit secret scan + rotation (Secrets) ·
   [secrets-and-supply-chain/secret-detection.md](secrets-and-supply-chain/secret-detection.md)
+- **untrusted PR → privileged workflow token / secrets** ⟵ no `pull_request_target` code execution,
+  least-privilege `permissions`, SHA-pinned actions, isolated runners (CI/CD) ·
+  [secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md)
 - **unbounded `strcpy`/`memcpy` → buffer overflow → RCE** ⟵ bounded APIs + a cppcheck/ASan gate (C/C++) ·
   [secure-coding-standards.md](secure-coding-standards.md)
 

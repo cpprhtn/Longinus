@@ -21,26 +21,31 @@ generative principles and the general ⛔ DO-NOT-report guards live in
 | `fetch(req.body.url)` / `requests.get(user_url)` / `http.get(param)` | **SSRF** | [web/ssrf.md](web/ssrf.md) | OK if URL validated against a strict protocol+host allowlist (not just blocklist) |
 | `req.body.price` / `req.body.total` / `req.body.discount` used in payment logic | **Price tampering** | [web/business-logic.md](web/business-logic.md) | OK if value is recomputed server-side from item IDs / DB prices |
 | `if (balance >= amount) ... balance -= amount` as two separate operations | **Race condition** | [web/business-logic.md](web/business-logic.md) | OK if inside a DB transaction with row lock (`SELECT ... FOR UPDATE`) or atomic update |
-| `Object.assign(user, req.body)` / `User(**request.data)` / `Model.update(req.body)` | **Mass assignment** | [api/README.md](api/README.md) | OK if DTO/allowlist filters fields before assignment |
-| `return user.to_dict()` / `res.json(user)` / `serialize(model)` returning full objects | **Excessive data exposure** | [api/README.md](api/README.md) | OK if the serializer explicitly excludes sensitive fields |
+| `Object.assign(user, req.body)` / `User(**request.data)` / `Model.update(req.body)` | **Mass assignment** | [api/mass-assignment-data-exposure.md](api/mass-assignment-data-exposure.md) | OK if DTO/allowlist filters fields before assignment |
+| `req.body.isAdmin` / `req.body.role` / `ownerId` / `tenantId` trusted from client input | **Privilege escalation / mass assignment** | [api/mass-assignment-data-exposure.md](api/mass-assignment-data-exposure.md) | OK if server-side authz recomputes or allowlists these fields |
+| `return user.to_dict()` / `res.json(user)` / `serialize(model)` returning full objects | **Excessive data exposure** | [api/mass-assignment-data-exposure.md](api/mass-assignment-data-exposure.md) | OK if the serializer explicitly excludes sensitive fields |
 | `pickle.load` / `pickle.loads` / `yaml.load(data, Loader=Loader)` (non-safe) | **Insecure deserialization → RCE** | [web/deserialization.md](web/deserialization.md) | OK if input is from a trusted source the attacker cannot control |
 | State-changing `GET` handler / form without CSRF token / `SameSite=None` | **CSRF** | [web/csrf.md](web/csrf.md) | OK if all state-changing operations require a non-cookie auth header (e.g., Bearer token in API) |
 | `path.join(base, req.params.file)` / `open(user_path)` without canonicalization | **Path traversal** | [web/file-upload-and-path.md](web/file-upload-and-path.md) | OK if `realpath()` checked against base and result is within allowed directory |
 | File upload without content-type validation or stored in webroot | **Unrestricted upload** | [web/file-upload-and-path.md](web/file-upload-and-path.md) | OK if stored outside webroot with random name AND content-type validated server-side |
 | Deep merge / recursive `Object.assign` / `_.merge` / `_.defaultsDeep` | **Prototype pollution** | [web/prototype-pollution.md](web/prototype-pollution.md) | OK if input is validated to reject `__proto__` / `constructor` / `prototype` keys |
 | No auth middleware on a route definition / `@public` on a sensitive endpoint | **Broken authentication** | [web/auth-and-session.md](web/auth-and-session.md) | OK if the route genuinely requires no auth (public page, health check) |
-| Admin/privileged route with same auth middleware as user routes | **BFLA** | [api/README.md](api/README.md) | OK if role/permission check exists inside or before the handler |
+| `User.create({username:"admin", password:"admin"})` / seeded demo admin | **Default credentials** | [web/auth-and-session.md](web/auth-and-session.md) | OK only in docs/tests/fixtures or a dev-only profile never deployed |
+| `if (user == "admin" && pass == "admin")` / hard-coded login branch | **Hard-coded auth bypass** | [web/auth-and-session.md](web/auth-and-session.md) | OK only in non-shipped tests/examples |
+| `if (req.query.admin)` / `?admin=true` / client-set role flag | **Auth bypass / privilege escalation** | [web/access-control.md](web/access-control.md) | OK if server ignores the value or validates it against server-side role state |
+| Admin/privileged route with same auth middleware as user routes | **BFLA** | [api/bola-bfla.md](api/bola-bfla.md) | OK if role/permission check exists inside or before the handler |
 
 ## Identity / Auth patterns
 
 | Code pattern you see | Check for | Leaf | False-positive guard |
 |---|---|---|---|
-| `jwt.decode(token)` without `algorithms=[...]` pinned | **JWT alg confusion / alg:none** | [identity/README.md](identity/README.md) | OK if a separate verification step pins the algorithm |
-| `jwt.decode(token, verify=False)` / `decode(token, options={"verify_signature": False})` | **JWT signature bypass** | [identity/README.md](identity/README.md) | OK only in a non-security context (logging, debugging) that never trusts the claims |
-| `algorithms` list includes both `RS256` and `HS256` | **JWT RS→HS confusion** | [identity/README.md](identity/README.md) | Never OK — always pin to one algorithm family |
-| `redirect_uri` compared with `.startsWith()` / `.includes()` / regex without `$` | **OAuth redirect_uri bypass → token theft** | [identity/README.md](identity/README.md) | OK only if exact-match allowlist is used |
-| No `state` parameter in OAuth authorize/callback flow | **OAuth CSRF / login CSRF** | [identity/README.md](identity/README.md) | Never OK — state is mandatory |
-| MFA check only in frontend JS / no server-side enforcement | **MFA bypass** | [identity/README.md](identity/README.md) | OK if server enforces MFA on every auth path |
+| `jwt.decode(token)` without `algorithms=[...]` pinned | **JWT alg confusion / alg:none** | [identity/jwt.md](identity/jwt.md) | OK if a separate verification step pins the algorithm |
+| `jwt.decode(token, verify=False)` / `decode(token, options={"verify_signature": False})` | **JWT signature bypass** | [identity/jwt.md](identity/jwt.md) | OK only in a non-security context (logging, debugging) that never trusts the claims |
+| `algorithms` list includes both `RS256` and `HS256` | **JWT RS→HS confusion** | [identity/jwt.md](identity/jwt.md) | Never OK — always pin to one algorithm family |
+| `JWT_SECRET = "secret"` / `SESSION_SECRET = "changeme"` | **Weak signing/session secret** | [identity/jwt.md](identity/jwt.md) | OK only in tests/examples; never in shipped config |
+| `redirect_uri` compared with `.startsWith()` / `.includes()` / regex without `$` | **OAuth redirect_uri bypass → token theft** | [identity/oauth-oidc.md](identity/oauth-oidc.md) | OK only if exact-match allowlist is used |
+| No `state` parameter in OAuth authorize/callback flow | **OAuth CSRF / login CSRF** | [identity/oauth-oidc.md](identity/oauth-oidc.md) | Never OK for browser OAuth flows; client-credentials is n/a |
+| MFA check only in frontend JS / no server-side enforcement | **MFA bypass** | [identity/mfa.md](identity/mfa.md) | OK if server enforces MFA on every auth path |
 | Password reset token with no expiry or reuse guard | **Account takeover via reset** | [web/auth-and-session.md](web/auth-and-session.md) | OK if token is single-use + time-limited + invalidated on use |
 
 ## AI / LLM patterns
@@ -75,6 +80,9 @@ generative principles and the general ⛔ DO-NOT-report guards live in
 | `api_key = "sk-..."` / `password = "..."` / `token = "ghp_..."` in source | **Hardcoded secret** | [secrets-and-supply-chain/secret-detection.md](secrets-and-supply-chain/secret-detection.md) | OK if it's a placeholder/example (e.g., `"your-api-key-here"` or in docs/tests with fake values) |
 | No `package-lock.json` / `yarn.lock` / `poetry.lock` committed | **Unpinned dependencies** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | OK if an alternative lockfile mechanism exists |
 | Dependency with known CVE (check `npm audit` / `pip audit` / `trivy`) | **Vulnerable dependency** | [secrets-and-supply-chain/dependency-supply-chain.md](secrets-and-supply-chain/dependency-supply-chain.md) | Verify the CVE actually affects the used function/version, not just the package. **Unconfirmed reachability → Info / patch-anyway, not High/Critical** (see severity gates in [severity-and-triage.md](severity-and-triage.md)) |
+| `.github/workflows` uses `pull_request_target` and checks out/runs PR code | **pwn request / CI secret exposure** | [secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md) | OK only if it never executes untrusted PR code and has least-privilege token permissions |
+| `${{ github.event.* }}` / inputs interpolated directly into `run:` shell | **CI script injection** | [secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md) | OK if passed through quoted env vars and validated |
+| GitHub Actions / images pinned to tags like `@v3`, `@main`, `latest` | **Mutable CI dependency** | [secrets-and-supply-chain/ci-cd-attacks.md](secrets-and-supply-chain/ci-cd-attacks.md) | OK if pinned by full SHA/digest elsewhere |
 
 ## C / C++ / native patterns (source audit)
 

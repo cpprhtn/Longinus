@@ -19,7 +19,10 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 > `❓ Needs-validation`, never "executed" for an unrun PoC ([proof-and-confirmation.md](proof-and-confirmation.md)).
 > **(6)** the **`coverage:` counts are required every report**; the full `surface[]`/`controls[]` arrays ride
 > in the header **only on multi-agent/`deep`** (single-skill/`standard` → account for sinks in §7 prose), and
-> **§7 lists examined vs not-examined** ([audit-ledger.md](audit-ledger.md)). **(7)** **match the request's
+> **§7 lists examined vs not-examined** ([audit-ledger.md](audit-ledger.md)). If a target clearly has
+> attackable inputs/sinks but `coverage.total = 0`, the audit is **incomplete**: rerun enumeration or
+> report the enumeration failure in §7; never emit a clean report from a zero denominator.
+> **(7)** **match the request's
 > language** for prose; keep the **YAML header, enum words, CWE/OWASP/CVSS ids, and `Status`/`Effort` labels
 > canonical English**. **(8)** write to `.longinus/reports/longinus_YYYYMMDDHHMM.md`
 > ([continuous-audit.md](continuous-audit.md)).
@@ -28,7 +31,7 @@ scannable) and a **machine** aggregating it (so the YAML header is parseable). R
 
 ````markdown
 ---
-longinus_report: "0.5.5"   # = the Longinus skill version (SKILL.md); not a separate schema number
+longinus_report: "0.7.0"   # = the Longinus skill version (SKILL.md); not a separate schema number
 target: <repo name or path>
 commit: <short SHA, or n/a>
 date_utc: <YYYY-MM-DD HH:MM>
@@ -84,7 +87,7 @@ coverage: { examined: 0, total: 0, pct: 0 }   # examined sinks / enumerated sink
 | **Severity** | 🔵 Low · CVSS 4.0 <score / vector or n/a> |
 | **Weakness** | CWE-<n> · OWASP <ref or n/a> |
 | **Location** | `<file:line>` / `<endpoint>` |
-| **Status** | ✅ Confirmed (executed) — *or* ✅ Confirmed (traced) — *or* ❓ Needs-validation |
+| **Status** | ✅ Confirmed (executed) — *or* ✅ Confirmed (traced) |
 
 - **Intent reconciliation:** <documented accepted-risk → Informational + cite | contradicts intent → raised | undocumented assumption → "confirm intended" | n/a>
 - **PoC / reproduction:** <numbered, copy-pasteable, benign marker only; if *executed*, the exact command **and the observed output** that proves it>

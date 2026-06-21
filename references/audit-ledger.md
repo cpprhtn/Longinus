@@ -37,6 +37,9 @@ lacked.
 
 **Coverage metric:** `examined / total_sinks` — and the report must *name* the `not-examined` rows in
 "What was NOT tested." A clean report with 40% coverage is an honest 40%, not a false "all clear."
+If the target clearly has request handlers, parsers, privileged operations, or other attackable sinks
+but `total_sinks = 0`, enumeration failed. Rerun with a scoped grep/static oracle or report the
+enumeration failure as not tested; a zero denominator is never a clean bill.
 
 ---
 

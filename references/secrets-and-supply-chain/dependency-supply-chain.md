@@ -2,8 +2,8 @@
 
 New as its own OWASP Top 10 category in 2025 — because most of your code is *other people's* code, and
 AI assistants pull in dependencies recklessly. This covers known-vulnerable dependencies, the
-AI-specific **slopsquatting** threat, lockfile/integrity hygiene, and build/CI security. CWE-1104,
-CWE-1357, CWE-829, CWE-494.
+AI-specific **slopsquatting** threat, and lockfile/integrity hygiene. CI/CD attack classes live in
+[ci-cd-attacks.md](ci-cd-attacks.md). CWE-1104, CWE-1357, CWE-829, CWE-494.
 
 ## Mechanical scan
 
@@ -88,9 +88,11 @@ widely-used libs.
 - **Subresource Integrity (SRI)** for third-party scripts loaded in the browser (`integrity=` +
   `crossorigin`) — defends against a compromised CDN (the Polyfill.io-style attack).
 
-## 4. Build, CI/CD & artifact integrity (A08 overlap)
+## 4. Build & artifact integrity (A08 overlap)
 
-The pipeline is a prime target — compromise the build, compromise everyone downstream:
+The pipeline is a prime target — compromise the build, compromise everyone downstream. For attack
+patterns such as pwn-request, script injection, cache poisoning, and self-hosted runner exposure, open
+[ci-cd-attacks.md](ci-cd-attacks.md). Baseline controls:
 - **Least-privilege CI:** scoped tokens, no long-lived cloud admin creds in CI, OIDC federation instead
   of stored keys, secrets via the platform's secret store (not plaintext YAML).
 - **Pin actions/images by digest** (`uses: actions/checkout@<sha>`, `FROM image@sha256:…`), not mutable

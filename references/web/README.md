@@ -15,7 +15,8 @@ the **OWASP Web Security Testing Guide (WSTG)**; defensive fixes reference the *
 
 > **Quick-mode consolidated web scan** (web is multi-leaf — this is the single entry point). Run these
 > greps, apply the SKIP conditions, report matches with the fixed severity. For the full per-class
-> procedure, open the leaf's own `## Mechanical scan`. Severities here are *provisional* — re-run
+> procedure, open the leaf's own `## Mechanical scan`. Run [../basic-vibe-triage.md](../basic-vibe-triage.md)
+> first for pre-launch/vibe-coded apps. Severities here are *provisional* — re-run
 > standard mode before acting (see [../audit-modes.md](../audit-modes.md)).
 
 **STEP 1 — SQL / command / template injection** → [injection.md](injection.md)
@@ -53,6 +54,13 @@ rg -n "router\.|app\.(get|post|put|delete)" . | rg -vi "auth|login_required|guar
 ```
 - **SKIP:** deser input from a trusted source the attacker can't control / `yaml.safe_load`; route genuinely public (health check); API uses a non-cookie Bearer header (CSRF n/a)
 - **FINDING:** Deserialization · **Critical** | Missing auth · **High** | CSRF · **Medium**
+
+**STEP 6 — Beginner high-yield config/auth mistakes** → [../basic-vibe-triage.md](../basic-vibe-triage.md) · [auth-and-session.md](auth-and-session.md) · [misconfiguration.md](misconfiguration.md)
+```bash
+rg -n -i "(admin|root|test|demo).{0,24}(admin|1234|password|pass|changeme)|password.{0,12}['\"](admin|1234|password|test|demo|changeme)['\"]|debug\s*[:=]\s*true|DEBUG\s*=\s*True|JWT_SECRET\s*[:=]\s*['\"](secret|changeme|dev|test)|cors\(\)|allow_origins.*\*" .
+```
+- **SKIP:** docs/tests/fixtures only; placeholders; dev-only config not reachable in production
+- **FINDING:** Default creds / weak secret / debug / permissive CORS · **Medium-High** by exposure
 
 **Output template (quick mode):**
 ```

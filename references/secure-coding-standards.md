@@ -40,6 +40,12 @@ memory-safe stacks (Rust/Go/managed languages) this is mostly moot — say so ho
 - **Format strings:** `printf(user)`, `syslog(user)` (CWE-134).
 - **Memory lifecycle:** use-after-free, double-free, missing `free`, returning a stack address
   (CWE-416/415/401).
+- **Leaks / resource exhaustion (do NOT deprioritize):** an alloc / `open` / `socket` / fd on a
+  per-request or per-connection loop with no matching `free`/`close` on every exit. On an
+  **unauthenticated, network-reachable daemon this is a reliable remote DoS — rate it High and FILE it**,
+  never a "not-examined" footnote (CWE-401/772/775). Trace lifetime **across function returns**: a buffer a
+  helper `malloc`s and returns (`p = read_packet(fd)`), consumed in the accept/request loop and freed by
+  no one, is a per-request leak — file it.
 - **Unchecked returns:** `malloc`/`realloc`/`fopen` result used without a NULL check (CWE-252/690).
 - **Off-by-one / missing NUL terminator**, `strncpy` that doesn't terminate, array index from input.
 
@@ -70,13 +76,13 @@ rg -n "malloc\s*\([^)]*[*+][^)]*\)|memcpy\s*\([^,]*,[^,]*,[^)]*[*+][^)]*\)" .
 - **SKIP:** operands are bounds-checked before the arithmetic; uses an overflow-checked allocator
 - **FINDING:** Integer overflow → heap overflow · **High** · Fix: validate sizes; checked arithmetic
 
-**STEP 4 — Unchecked allocation / memory lifecycle** → CWE-252/416 · CERT `MEM52-C`/`EXP34-C`
+**STEP 4 — Unchecked allocation / memory lifecycle / leaks** → CWE-252/416/401 · CERT `MEM52-C`/`EXP34-C`/`MEM31-C`
 ```bash
 rg -n "free\s*\(" .          # inspect for double-free / use-after-free around each
-rg -n "= *malloc\s*\(|= *realloc\s*\(" .   # confirm each result is NULL-checked before use
+rg -n "= *malloc\s*\(|= *calloc\s*\(|= *realloc\s*\(|\bfopen\s*\(|\bopen\s*\(|\bsocket\s*\(" .   # each: NULL-checked? AND freed/closed on EVERY exit path?
 ```
-- **SKIP:** the pointer is NULL-checked before dereference; freed pointer is set to NULL and not reused
-- **FINDING:** UAF/double-free **Critical** · NULL-deref **Medium** · Fix: check returns; null-after-free
+- **SKIP:** NULL-checked before dereference; freed pointer set to NULL and not reused; freed/closed on every path (or one-time process-lifetime setup)
+- **FINDING:** UAF/double-free **Critical** · NULL-deref **Medium** · **leak/fd-leak on a per-request/per-connection path → remote DoS: rate High on an unauth network daemon and FILE it (not "not-examined")** · Fix: check returns; null-after-free; free/close on all paths
 
 **Output template (quick mode):**
 ```
