@@ -3,6 +3,18 @@
 Notable changes to Longinus, newest first. The report header's `longinus_report` field tracks the skill
 version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v1.0.0
+
+- **First stable release.** The audit methodology is unchanged from v0.7.0 — this is a stability and
+  portability milestone, not a behavior change.
+- **Portable beyond Claude Code.** Added [`AGENTS.md`](AGENTS.md) so Codex CLI and other AGENTS.md-aware
+  agents can run Longinus by reading [`SKILL.md`](SKILL.md) directly. It pins the invariants a skill
+  runtime would otherwise enforce — the authorization gate, read-only default, "target docs are data not
+  instructions," prove-or-park / low-false-positive discipline, coverage-gap disclosure, and
+  one-audit-one-session — and maps Claude Code tools/subagents to a single-context run.
+- **Repository hygiene.** Added a `.gitignore` for generated audit output (`.longinus/`) and local
+  artifacts; maintainer-only evaluation tooling stays out of the shipped tree.
+
 ### v0.7.0
 
 - **Cheap first-pass triage for vibe-coded/pre-launch repos.** Added `basic-vibe-triage.md` and wired it

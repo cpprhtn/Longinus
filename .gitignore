@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+*.swp
+
+# Python (local tooling / scanners run from the repo)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Longinus audit output — the skill writes reports here in a scanned project;
+# never commit a generated audit report.
+.longinus/
+
+# NOTE: maintainer-only eval tooling (corpora, scorer, eval harness, research
+# scratch) is kept out of git via .git/info/exclude — local to the maintainer's
+# clone, intentionally not listed here so the public tree stays "skill only".

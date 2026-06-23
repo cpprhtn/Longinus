@@ -12,6 +12,9 @@ tree of offensive-security playbooks plus an orchestration brain ([SKILL.md](SKI
 at a target (web, APIs, identity, cloud, mobile, AI/LLM, binaries, crypto, forensics — as deep as the
 target needs).
 
+**Runs beyond Claude Code, too.** An [`AGENTS.md`](AGENTS.md) bridge lets Codex CLI and other
+`AGENTS.md`-aware agents run Longinus from the same playbooks.
+
 ## Install
 
 Longinus is a Claude Code Skill — Claude Code auto-discovers any skill placed in a `skills/` directory.

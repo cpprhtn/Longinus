@@ -10,6 +10,9 @@
 수정 방안과 함께 제시합니다. 트리 구조로 정리된 공격 보안 플레이북과, 그것을 타깃에 맞게 운용하는 오케스트레이션
 로직([SKILL.md](SKILL.md))으로 구성됩니다.
 
+**Claude Code 밖에서도 동작합니다.** [`AGENTS.md`](AGENTS.md) 브리지를 통해 Codex CLI 등 `AGENTS.md`를
+읽는 다른 에이전트에서도 동일한 플레이북으로 Longinus를 실행할 수 있습니다.
+
 ## 설치
 
 Longinus는 Claude Code 스킬이며, `skills/` 디렉터리에 두면 Claude Code가 자동으로 인식합니다.
