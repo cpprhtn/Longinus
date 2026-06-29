@@ -3,6 +3,19 @@
 Notable changes to Longinus, newest first. The report header's `longinus_report` field tracks the skill
 version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v1.1.0
+
+- **Oracle-first surface-sweep guidance, sharpened by measurement** (`audit-modes.md` Step 3). The
+  existing "prefer a taint oracle" guidance now states three measured nuances: the oracle is high-recall
+  but **over-flags**, so candidates must be adjudicated and false positives **pruned** (not
+  rubber-stamped); the enumerate-then-adjudicate payoff is **largest on heterogeneous / cross-file sinks**
+  (where a read-budgeted pass would otherwise park candidates) and mainly a token saving on uniform sinks;
+  and a **hard limit** — a general oracle (`semgrep --config auto`, CodeQL default suites) has no rules for
+  memory-safety / embedded classes, so a clean run on C/C++/firmware is a **false-clean, not coverage**,
+  and the secure-coding / binary leaf greps stay primary there.
+- **Removed a vestigial redirect stub.** Deleted `references/attacker-mindset.md` (its content had already
+  merged into `pattern-triggers.md`) and repointed its references in the map and bibliography.
+
 ### v1.0.0
 
 - **First stable release.** The audit methodology is unchanged from v0.7.0 — this is a stability and

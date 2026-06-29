@@ -88,7 +88,6 @@ Longinus
 │   ├── design-intent.md ................ 🎯 read the design intent first → audit the gap (intent vs reality)
 │   ├── red-blue.md ...................... ⚔️ bidirectional method: Blue control-map × Red sinks → the diff is the flaw
 │   ├── audit-ledger.md ................. 📒 the shared surface[]/controls[] ledger — coverage/recall + the red×blue diff
-│   ├── attacker-mindset.md .............. 🧠 → merged into pattern-triggers.md (redirect stub)
 │   ├── basic-vibe-triage.md ............. fast pre-leaf sweep for default creds, debug/admin surfaces, weak secrets
 │   ├── pattern-triggers.md .............. 🎯 6 generative principles + ⛔ DO-NOT-report FP guards
 │   ├── pattern-catalog.md ............... 🎯 code pattern → vulnerability → leaf lookup tables

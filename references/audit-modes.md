@@ -186,6 +186,18 @@ does what *it* is good at on top: semantic triage, chaining, business impact, in
 Each taint result becomes a `surface` row (`reachable: true|false`); each unreached candidate is
 `reachable: unknown` → Needs-validation, never a confident finding.
 
+> **Prune, don't trust — the oracle over-flags.** Taint scanners are tuned for recall: they report
+> sanitized, constant-folded, and dead-branch sinks as candidates too. Adjudicate each (TRUE only if a
+> request-controlled value reaches the sink un-neutralized) and **cut** the false positives — never
+> rubber-stamp the list. **Where it pays off / where it can't (measured):** enumerate-then-adjudicate
+> wins most on **heterogeneous or cross-file sinks** (varied call shapes, taint through helpers) — where
+> a read-budgeted pass would otherwise park candidates as Needs-validation; on uniform, self-evident
+> sinks it mainly saves tokens. **Hard limit:** a *general* oracle (`semgrep --config auto`, CodeQL's
+> default suites) has **no rules for memory-safety / embedded classes** (use-after-free, double-free,
+> leaks, signedness, overflow). On C/C++/firmware a clean oracle run is a **false-clean, not coverage** —
+> keep the [secure-coding](secure-coding-standards.md) / [binary](binary-exploitation/README.md) leaf
+> greps primary there (custom Joern flow queries are the exception).
+
 **Fallback — grep enumeration:** the `scan()` greps in the **one batched recon pass** at the top of this
 section already enumerate sources / sinks / controls in a single round-trip, anchored to call-shape and
 scoped past vendored/generated trees (don't re-run them here — each round-trip reprocesses the growing

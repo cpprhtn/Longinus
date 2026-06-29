@@ -2,7 +2,7 @@
 
 Bibliography for the governance & lens **spine**:
 [`authorization-and-scope.md`](../references/authorization-and-scope.md) ·
-[`attacker-mindset.md`](../references/attacker-mindset.md) ·
+[`pattern-triggers.md`](../references/pattern-triggers.md) ·
 [`methodology.md`](../references/methodology.md) ·
 [`audit-modes.md`](../references/audit-modes.md) ·
 [`chaining-and-impact.md`](../references/chaining-and-impact.md) ·
@@ -25,7 +25,7 @@ Bibliography for the governance & lens **spine**:
 
 ## Attacker mindset & chaining
 
-Grounding for [`attacker-mindset.md`](../references/attacker-mindset.md) (the generative principles)
+Grounding for [`pattern-triggers.md`](../references/pattern-triggers.md) (the generative principles)
 and [`chaining-and-impact.md`](../references/chaining-and-impact.md) (composing findings into impact):
 
 - **Confused deputy** — Norm Hardy, *The Confused Deputy* (1988, ACM `10.1145/54289.871709`), the
