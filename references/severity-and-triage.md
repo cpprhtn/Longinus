@@ -6,10 +6,19 @@ trusts that what you reported is real.
 
 ---
 
-## Score with CVSS 4.0
+## Severity anchor: the mandatory gate + the business-impact band
 
-Use [CVSS 4.0](https://www.first.org/cvss/) as the common language, but treat the number as a starting
-point, not gospel — always sanity-check against real business impact.
+**Anchor every severity on the *Mandatory severity gates* (below) plus the business-impact band — those
+are the reproducible parts.** An LLM builds [CVSS 4.0](https://www.first.org/cvss/)
+vector strings *inconsistently* (the base-metric values drift run to run), so CVSS is an **optional
+annotation, not the anchor**: if you emit a vector, do not let its exact number set the severity — the
+gate and the band do, and **never block a report on producing a CVSS score**. The rough band is enough:
+**Low · Medium · High · Critical** (CVSS base ≈ 0.1–3.9 · 4.0–6.9 · 7.0–8.9 · 9.0–10.0).
+
+### CVSS 4.0 — optional common-language annotation
+
+When you do want a number as shared vocabulary, treat it as a starting point, not gospel — always
+sanity-check against real business impact.
 
 **Base metrics (the core):**
 - *Attack Vector* (Network/Adjacent/Local/Physical) — how remote is it?

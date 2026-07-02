@@ -82,7 +82,7 @@ in writing. The richest findings are where **the implementation silently diverge
 
 | The finding, vs the intent… | Verdict |
 |---|---|
-| Matches a **documented** accepted-risk | **Downgrade to Informational** — *and cite the doc/comment.* This is the *only* legitimate "the designer meant it." |
+| Matches a **documented** accepted-risk | **Surface it as an explicitly-labeled accepted-risk — never omit it.** Downgrade severity (Informational is fine), but **keep it listed** with the citation, mark it `accepted-risk (documented)`, and add *"confirm this is still intended?"* **`documented ≠ safe; documented = risk explicitly accepted`** — a real, exploitable weakness someone chose to keep is a *decision* that deserves daylight (owners change, context drifts, and the note may itself be a careless or planted downgrade). The sin to avoid is **dropping it from the report entirely**, not the low severity. |
 | **Contradicts** stated intent | A real finding — often **higher** severity: the system does what it was *not* designed to do. |
 | Relies on an **undocumented** assumption | **Still a finding.** Report it + *"confirm this is intended."* An unstated assumption is exactly what an attacker exploits — silence is not a defense. |
 

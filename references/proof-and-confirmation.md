@@ -25,6 +25,13 @@ left at "traced" is incomplete — attempt the run. "Traced" is for when executi
 (no DB, secrets, or service to stand up), and you **say which** in the report. Never label "executed" for
 a PoC you didn't actually run — that is the invented-PoC trap wearing a confident face.
 
+> **Reality check — `traced` is the common tier, so make it rigorous.** Standing up a DB + secrets + the
+> full service inside one audit session is often impractical, so most real findings land at **traced**, not
+> executed. Treat *executed* as the bonus it usually is — not the headline — and put the discipline where
+> the volume actually is: every `traced` finding must survive the [fp-verification](fp-verification.md)
+> gate (restate → trace source→sink → control-diff → devil's-advocate → verdict) before it is filed. A
+> rigorous *traced* beats a rare *executed* for the report's overall trustworthiness.
+
 ## Reject the confident-bug shortcuts
 
 The dominant LLM failure here is the *confident hallucinated bug* — promoting "this looks dangerous" into a

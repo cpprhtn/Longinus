@@ -3,6 +3,27 @@
 Notable changes to Longinus, newest first. The report header's `longinus_report` field tracks the skill
 version (see [SKILL.md](SKILL.md)); these entries correspond to those version bumps.
 
+### v1.1.1
+
+Honesty and triage-clarity pass (documentation; no change to what the skill hunts for).
+
+- **`limitations.md` — four disclosures added.** (1) recall is hostage to the context window: on a large
+  repo the model may load only part of the tree and, not knowing what it never read, *under-report* its own
+  §7 coverage gap — a partial audit can look complete (the `coverage.total == 0` guard only catches total
+  failure); (2) diff-only (continuous) re-audits miss cross-file impact (a change in file A making existing
+  code in file B exploitable); (3) capacity sensitivity — the heaviest-reasoning disciplines degrade first
+  on smaller models; (4) non-determinism — the same target can yield a different finding set, so a CI gate
+  must anchor on fixed-ruleset tools and constrain the LLM to triage.
+- **`severity-and-triage.md` — CVSS demoted to an optional annotation.** Severity now anchors on the
+  mandatory gates + the business-impact band (the reproducible parts); an LLM builds CVSS vectors
+  inconsistently, so a report is never blocked on producing a CVSS score.
+- **`design-intent.md` — documented accepted-risks are surfaced, not buried.** A documented decision may be
+  downgraded in severity but must stay **listed and labeled** (`accepted-risk (documented)` + "confirm
+  still intended?"); `documented ≠ safe`. The sin to avoid is dropping it from the report.
+- **`proof-and-confirmation.md` — `traced` acknowledged as the common tier.** Standing up a DB/secrets/
+  service in one session is often impractical, so most findings land at *traced*; the discipline for it is
+  the fp-verification gate, where the volume actually is.
+
 ### v1.1.0
 
 - **Oracle-first surface-sweep guidance, sharpened by measurement** (`audit-modes.md` Step 3). The
